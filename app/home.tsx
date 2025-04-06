@@ -14,6 +14,8 @@ import { useSelector } from "react-redux";
 import CustomFooterBar from "@/components/CustomFooterBar";
 import NewsFeed from "@/components/content/NewsFeed";
 import Announce from "@/components/content/Announce";
+import MenuContent from "@/components/content/MenuContent";
+import PotalProgram from "@/components/content/PotalProgram";
 
 const home = () => {
   const { user } = useSelector((state: RootState) => state.auth);
@@ -48,9 +50,12 @@ const home = () => {
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
         }
+        style={{ marginBottom: 60 }}
       >
         <NewsFeed />
         <Announce />
+        <MenuContent />
+        <PotalProgram />
       </ScrollView>
 
       <CustomFooterBar />
