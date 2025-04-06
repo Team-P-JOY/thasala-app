@@ -1,17 +1,11 @@
-import { StyleSheet, Text, View, TouchableOpacity, Image } from "react-native";
+import { StyleSheet, View, Image } from "react-native";
 import React, { useState, useEffect } from "react";
 import Swiper from "react-native-swiper";
-import { useRouter } from "expo-router";
-import CustomText from "@/components/CustomText";
 import axios from "axios";
-import { Ionicons } from "@expo/vector-icons";
-import { useSelector } from "react-redux";
-import { RootState } from "@/core/store";
 import { theme } from "@/core/theme";
+import { ActivityIndicator } from "react-native-paper";
 
 const NewsFeed = () => {
-  const router = useRouter();
-  const { docs } = useSelector((state: RootState) => state.auth);
   const [newsList, setNews] = useState<
     { id: string; title: string; detail: string; image: string }[]
   >([]);
@@ -34,6 +28,22 @@ const NewsFeed = () => {
 
   return (
     <View style={{ height: 200, width: "100%", marginBottom: 15 }}>
+      {loading && (
+        <View
+          style={{
+            flex: 1,
+            justifyContent: "center",
+            alignItems: "center",
+            backgroundColor: "#804A9B80",
+          }}
+        >
+          <ActivityIndicator
+            size="large"
+            animating={true}
+            color={theme.colors.primary}
+          />
+        </View>
+      )}
       {!loading && (
         <Swiper
           showsButtons={false}
@@ -42,12 +52,12 @@ const NewsFeed = () => {
           autoplayTimeout={5}
           paginationStyle={{ bottom: -20 }}
           dotStyle={{
-            backgroundColor: "#FFD0BC",
+            backgroundColor: theme.colors.primary,
             width: 8,
             height: 8,
           }}
           activeDotStyle={{
-            backgroundColor: theme.colors.primary,
+            backgroundColor: "#FF893A",
             width: 8,
             height: 8,
           }}
