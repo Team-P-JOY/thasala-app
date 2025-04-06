@@ -1,14 +1,29 @@
-import { Image, ScrollView, StyleSheet, Text, View } from "react-native";
-import React from "react";
+import {
+  Image,
+  ScrollView,
+  StyleSheet,
+  RefreshControl,
+  View,
+} from "react-native";
+import React, { useState } from "react";
 import CustomBackground from "@/components/CustomBackground";
 import { theme } from "@/core/theme";
 import { Appbar, Avatar } from "react-native-paper";
 import { RootState } from "@/core/store";
 import { useSelector } from "react-redux";
 import CustomFooterBar from "@/components/CustomFooterBar";
+import NewsFeed from "@/components/content/NewsFeed";
+import Announce from "@/components/content/Announce";
 
 const home = () => {
   const { user } = useSelector((state: RootState) => state.auth);
+  const [refreshing, setRefreshing] = useState(false);
+  const onRefresh = () => {
+    setRefreshing(true);
+    setTimeout(() => {
+      setRefreshing(false);
+    }, 2000);
+  };
   return (
     <CustomBackground>
       <Appbar.Header style={{ backgroundColor: "transparent", elevation: 0 }}>
@@ -28,7 +43,16 @@ const home = () => {
           />
         </View>
       </Appbar.Header>
-      <ScrollView></ScrollView>
+      <ScrollView
+        contentContainerStyle={{ flexGrow: 1 }}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
+      >
+        <NewsFeed />
+        <Announce />
+      </ScrollView>
+
       <CustomFooterBar />
     </CustomBackground>
   );
