@@ -1,74 +1,74 @@
-import { Image, StyleSheet, Platform } from 'react-native';
+import React, { memo, useEffect } from "react";
+import { View, StyleSheet, Image } from "react-native";
+import { useRouter } from "expo-router";
+import CustomText from "@/components/CustomText";
+import App from "@/app.json";
+import CustomBackground from "@/components/CustomBackground";
+import { useSelector, useDispatch } from "react-redux";
+import { RootState } from "@/core/store";
 
-import { HelloWave } from '@/components/HelloWave';
-import ParallaxScrollView from '@/components/ParallaxScrollView';
-import { ThemedText } from '@/components/ThemedText';
-import { ThemedView } from '@/components/ThemedView';
+function IntroScreen() {
+  const { isAuthenticated, isLoaded, pin } = useSelector(
+    (state: RootState) => state.auth
+  );
+  const router = useRouter();
+  useEffect(() => {
+    if (!isLoaded) return;
+    handleRedirect();
+  }, [isLoaded]);
 
-export default function HomeScreen() {
+  function handleRedirect() {
+    console.log("isAuthenticated", isAuthenticated);
+    console.log("pin", pin);
+    const timeout = setTimeout(() => {
+      if (isAuthenticated) {
+        if (pin) {
+          router.replace("/pinLogin");
+        } else {
+          router.replace("/pinSetting");
+        }
+      } else {
+        router.replace("/login");
+      }
+    }, 3000);
+    return () => clearTimeout(timeout);
+  }
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
-      headerImage={
+    <CustomBackground style={styles.container}>
+      <View>
         <Image
-          source={require('@/assets/images/partial-react-logo.png')}
-          style={styles.reactLogo}
+          resizeMode="contain"
+          source={require("../assets/images/slider2.png")}
+          style={{ height: 100 }}
         />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome!</ThemedText>
-        <HelloWave />
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
-        <ThemedText>
-          Edit <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> to see changes.
-          Press{' '}
-          <ThemedText type="defaultSemiBold">
-            {Platform.select({
-              ios: 'cmd + d',
-              android: 'cmd + m',
-              web: 'F12'
-            })}
-          </ThemedText>{' '}
-          to open developer tools.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 2: Explore</ThemedText>
-        <ThemedText>
-          Tap the Explore tab to learn more about what's included in this starter app.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-        <ThemedText>
-          When you're ready, run{' '}
-          <ThemedText type="defaultSemiBold">npm run reset-project</ThemedText> to get a fresh{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> directory. This will move the current{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{' '}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
-        </ThemedText>
-      </ThemedView>
-    </ParallaxScrollView>
+        <CustomText bold style={styles.title}>
+          Thasala
+        </CustomText>
+      </View>
+      <CustomText style={styles.version}>Version {App.expo.version}</CustomText>
+    </CustomBackground>
   );
 }
 
 const styles = StyleSheet.create({
-  titleContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
+  container: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
   },
-  stepContainer: {
-    gap: 8,
-    marginBottom: 8,
+  title: {
+    fontSize: 32,
+    fontWeight: "bold",
+    marginTop: 5,
+    color: "#804A9B",
+    textAlign: "center",
   },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
+  version: {
+    fontSize: 12,
+    position: "absolute",
+    bottom: 20,
+    color: "white",
   },
 });
+
+export default memo(IntroScreen);
