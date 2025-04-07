@@ -1,12 +1,10 @@
-import { CameraView, CameraType, useCameraPermissions } from "expo-camera";
+import { CameraView, useCameraPermissions } from "expo-camera";
 import { useState } from "react";
 import {
-  Button,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
-  Alert,
   Dimensions,
   Image,
 } from "react-native";
@@ -78,8 +76,7 @@ export default function QrScreen() {
   }
 
   function handleBarCodeScanned({ type, data }: any) {
-    // setScanned(true);
-
+    setScanned(true);
     showModal();
 
     // router.push({
