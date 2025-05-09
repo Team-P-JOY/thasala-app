@@ -35,8 +35,6 @@ export default function QrScreen() {
           back={() => {
             router.replace("/home");
           }}
-          right={toggleCameraFacing}
-          rightIcon="camera-flip-outline"
         />
         <View style={styles.container}>
           <Text style={styles.message}>Requesting camera permission...</Text>
@@ -53,18 +51,18 @@ export default function QrScreen() {
           back={() => {
             router.replace("/home");
           }}
-          right={toggleCameraFacing}
-          rightIcon="camera-flip-outline"
         />
         <View style={styles.container}>
-          <Text style={styles.message}>
+          <CustomText style={styles.message}>
             เราต้องการได้รับอนุญาตจากคุณในการใช้กล้อง
-          </Text>
+          </CustomText>
           <TouchableOpacity
             style={styles.grantPermission}
             onPress={requestPermission}
           >
-            <Text style={styles.grantPermissionText}>ให้สิทธิ์การเข้าถึง</Text>
+            <CustomText style={styles.grantPermissionText}>
+              ให้สิทธิ์การเข้าถึง
+            </CustomText>
           </TouchableOpacity>
         </View>
       </CustomBackground>
@@ -87,28 +85,14 @@ export default function QrScreen() {
 
   return (
     <CustomBackground>
-      <Appbar.Header style={{ backgroundColor: "transparent", elevation: 0 }}>
-        <Appbar.BackAction
-          onPress={() => {
-            router.replace("/home");
-          }}
-          color={theme.colors.primary}
-        />
-        <Appbar.Content
-          title="สแกน"
-          titleStyle={{
-            fontSize: 18,
-            color: theme.colors.primary,
-            fontFamily: "bold",
-            textAlign: "center",
-          }}
-        />
-        <Appbar.Action
-          size={30}
-          icon="camera-flip-outline"
-          color="transparent"
-        />
-      </Appbar.Header>
+      <CustomTopBar
+        title="สแกน"
+        back={() => {
+          router.replace("/home");
+        }}
+        right={toggleCameraFacing}
+        rightIcon="camera-flip-outline"
+      />
 
       <View style={styles.container}>
         <View style={styles.buttonContainer}>
@@ -122,7 +106,7 @@ export default function QrScreen() {
           styles.camera,
           {
             width: width * 0.9,
-            height: width,
+            height: width * 0.9,
           },
         ]}
       >
@@ -165,13 +149,17 @@ export default function QrScreen() {
             <Ionicons
               name="alert-circle"
               size={60}
-              style={{ color: "#245373", marginBottom: 10 }}
+              style={{ color: theme.colors.primary, marginBottom: 10 }}
             />
             <CustomText
               bold
-              style={{ color: "#245373", fontSize: 20, marginBottom: 10 }}
+              style={{
+                color: theme.colors.primary,
+                fontSize: 20,
+                marginBottom: 10,
+              }}
             >
-              ไม่พบข้อมูลโคตัวนี้ในระบบ
+              ไม่พบข้อมูลในระบบ
             </CustomText>
             <CustomText
               style={{
@@ -189,7 +177,7 @@ export default function QrScreen() {
               style={{
                 padding: 10,
                 paddingHorizontal: 20,
-                backgroundColor: "#245373",
+                backgroundColor: theme.colors.primary,
                 borderRadius: 5,
                 marginTop: 20,
                 width: "100%",
@@ -220,6 +208,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 30,
   },
   camera: {
+    backgroundColor: "white",
     position: "absolute",
     top: "50%",
     left: "50%",
@@ -272,7 +261,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: "rgba(0, 0, 0, 0.5)",
+    backgroundColor: theme.colors.primary,
     borderWidth: 1,
     borderColor: "#fff",
     padding: 15,

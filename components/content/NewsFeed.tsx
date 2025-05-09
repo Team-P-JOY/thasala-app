@@ -1,9 +1,8 @@
-import { StyleSheet, View, Image } from "react-native";
+import { StyleSheet, View, Image, ActivityIndicator } from "react-native";
 import React, { useState, useEffect } from "react";
 import Swiper from "react-native-swiper";
 import axios from "axios";
 import { theme } from "@/core/theme";
-import { ActivityIndicator } from "react-native-paper";
 
 const NewsFeed = () => {
   const [newsList, setNews] = useState<
@@ -34,7 +33,7 @@ const NewsFeed = () => {
             flex: 1,
             justifyContent: "center",
             alignItems: "center",
-            backgroundColor: "#804A9B80",
+            backgroundColor: "#ffffff80",
           }}
         >
           <ActivityIndicator

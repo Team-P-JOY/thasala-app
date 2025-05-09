@@ -18,8 +18,6 @@ function IntroScreen() {
   }, [isLoaded]);
 
   function handleRedirect() {
-    console.log("isAuthenticated", isAuthenticated);
-    console.log("pin", pin);
     const timeout = setTimeout(() => {
       if (isAuthenticated) {
         if (pin) {

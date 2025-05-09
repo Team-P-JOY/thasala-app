@@ -264,7 +264,7 @@ const pinLogin = () => {
             <View style={{ flexDirection: "row", justifyContent: "center" }}>
               <TouchableOpacity style={styles.pinButton} onPress={handleReset}>
                 <Ionicons
-                  name="repeat"
+                  name="sync"
                   size={32}
                   color={theme.colors.primary}
                   style={{ width: 60, textAlign: "center" }}

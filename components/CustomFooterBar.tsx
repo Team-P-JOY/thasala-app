@@ -51,7 +51,7 @@ const CustomFooterBar = () => {
           onPress={() => router.replace("/scan")}
         >
           <Ionicons
-            name="qr-code-outline"
+            name="scan-sharp"
             size={32}
             style={pathname === "/scan" ? styles.navIconActive : styles.navIcon}
           />

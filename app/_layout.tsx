@@ -8,18 +8,24 @@ import "react-native-reanimated";
 import { theme } from "@/core/theme";
 import { Provider as StoreProvider, useDispatch } from "react-redux";
 import store from "@/core/store";
-import { restoreAuth, setPin } from "@/core/authSlice";
+import { restoreAuth, setPin, setMenu } from "@/core/authSlice";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 SplashScreen.preventAutoHideAsync();
+
+const AUTH_STORAGE_KEY = "thasala@auth";
+const MENU_STORAGE_KEY = "thasala@menu";
+const PIN_STORAGE_KEY = "thasala@pin";
 
 function AppContent() {
   const dispatch = useDispatch();
 
   useEffect(() => {
     async function loadAuth() {
-      const authData = await AsyncStorage.getItem("thasala@auth");
-      const pinData = await AsyncStorage.getItem("thasala@pin");
+      const authData = await AsyncStorage.getItem(AUTH_STORAGE_KEY);
+      const pinData = await AsyncStorage.getItem(PIN_STORAGE_KEY);
+      const menuData = await AsyncStorage.getItem(MENU_STORAGE_KEY);
+
       if (authData) {
         dispatch(restoreAuth(JSON.parse(authData)));
       } else {
@@ -30,6 +36,12 @@ function AppContent() {
         dispatch(setPin(JSON.parse(pinData)));
       } else {
         dispatch(setPin(null));
+      }
+
+      if (menuData && menuData.length > 0) {
+        dispatch(setMenu(JSON.parse(menuData)));
+      } else {
+        dispatch(setMenu([]));
       }
     }
 
@@ -48,6 +60,8 @@ function AppContent() {
           <Stack.Screen name="scan" options={{ headerShown: false }} />
           <Stack.Screen name="profile" options={{ headerShown: false }} />
           <Stack.Screen name="setting" options={{ headerShown: false }} />
+
+          <Stack.Screen name="portal" options={{ headerShown: false }} />
 
           <Stack.Screen name="+not-found" options={{ headerShown: false }} />
         </Stack>
