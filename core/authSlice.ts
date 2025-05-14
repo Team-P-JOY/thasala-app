@@ -1,5 +1,5 @@
-import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
 const AUTH_STORAGE_KEY = "thasala@auth";
 const MENU_STORAGE_KEY = "thasala@menu";
@@ -11,7 +11,7 @@ const INITIAL_MENU = [
     key: 1,
     label: "เช็คอิน",
     icon: "location-outline",
-    route: "/home",
+    route: "/checkin",
     show: true,
   },
   {

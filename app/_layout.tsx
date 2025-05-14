@@ -1,15 +1,15 @@
-import { PaperProvider } from "react-native-paper";
+import { restoreAuth, setMenu, setPin } from "@/core/authSlice";
+import store from "@/core/store";
+import { theme } from "@/core/theme";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useFonts } from "expo-font";
 import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
 import { useEffect } from "react";
+import { PaperProvider } from "react-native-paper";
 import "react-native-reanimated";
-import { theme } from "@/core/theme";
 import { Provider as StoreProvider, useDispatch } from "react-redux";
-import store from "@/core/store";
-import { restoreAuth, setPin, setMenu } from "@/core/authSlice";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -60,6 +60,7 @@ function AppContent() {
           <Stack.Screen name="scan" options={{ headerShown: false }} />
           <Stack.Screen name="profile" options={{ headerShown: false }} />
           <Stack.Screen name="setting" options={{ headerShown: false }} />
+          <Stack.Screen name="checkin" options={{ headerShown: false }} />
 
           <Stack.Screen name="portal" options={{ headerShown: false }} />
 
