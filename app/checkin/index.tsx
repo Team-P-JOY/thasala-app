@@ -48,8 +48,8 @@ const CheckInScreen = () => {
   const [locations, setLocations] = useState<any[]>([]);
   const [loadingLocations, setLoadingLocations] = useState<boolean>(true);
   const [locationStatus, setLocationStatus] = useState<any>({
-    status: false,
-    message: "ไม่สามารถระบุตำแหน่งได้",
+    status: 2,
+    message: "กำลังดึงตำแหน่ง GPS...",
     distance: 0,
   });
   const router = useRouter();
@@ -68,8 +68,10 @@ const CheckInScreen = () => {
         setLoadingLocations(false);
       }
     };
-
-    fetchLocations();
+    if (locations.length === 0) {
+      setLoadingLocations(true);
+      fetchLocations();
+    }
   }, []);
 
   useEffect(() => {
@@ -94,6 +96,7 @@ const CheckInScreen = () => {
   }, [loadingLocations]);
 
   const _callCurrentLocation = async () => {
+    if (loadingLocations) return;
     const loc = await Location.getCurrentPositionAsync({});
     setLocation({
       latitude: loc.coords.latitude,
@@ -129,7 +132,7 @@ const CheckInScreen = () => {
   const _findNearLocation = (lat: number, lng: number) => {
     if (!locations || locations.length === 0) {
       setLocationStatus({
-        status: false,
+        status: 0,
         message: "ไม่พบสถานที่",
         distance: 0,
       });
@@ -163,7 +166,7 @@ const CheckInScreen = () => {
 
     if (nearLocation) {
       setLocationStatus({
-        status: nearLocation.distance < 0,
+        status: nearLocation.distance < 0 ? 1 : 0,
         message:
           nearLocation.distance < 0
             ? `อยู่ใน ${nearLocation.message}`
@@ -172,7 +175,7 @@ const CheckInScreen = () => {
       });
     } else {
       setLocationStatus({
-        status: false,
+        status: 0,
         message: "ไม่ได้อยู่ในพื้นที่",
         distance: 0,
       });
@@ -272,20 +275,47 @@ const CheckInScreen = () => {
               เวลา {currentTime.toLocaleTimeString("th-TH")}
             </Text>
 
-            <Text
-              style={[
-                styles.headerStatus,
-                { color: locationStatus.status ? "green" : "red" },
-              ]}
+            <View
+              style={{
+                flexDirection: "row",
+                alignItems: "center",
+                gap: 5,
+                paddingTop: 15,
+              }}
             >
-              {locationStatus.message}
-            </Text>
+              {locationStatus.status === 2 && (
+                <ActivityIndicator animating={true} color="blue" />
+              )}
+
+              <Text
+                style={[
+                  styles.headerStatus,
+                  {
+                    color:
+                      locationStatus.status === 1
+                        ? "green"
+                        : locationStatus.status === 2
+                        ? "blue"
+                        : "red",
+                  },
+                ]}
+              >
+                {locationStatus.message}
+              </Text>
+            </View>
 
             {locationStatus.distance !== 0 ? (
               <Text
                 style={[
                   styles.headerStatusDis,
-                  { color: locationStatus.status ? "green" : "red" },
+                  {
+                    color:
+                      locationStatus.status === 1
+                        ? "green"
+                        : locationStatus.status === 2
+                        ? "blue"
+                        : "red",
+                  },
                 ]}
               >
                 (ระยะห่าง {locationStatus.distance.toFixed(2)} ม.)
@@ -294,9 +324,11 @@ const CheckInScreen = () => {
               ""
             )}
 
-            <Text style={[styles.headerStatus2]}>
-              ({location.latitude}, {location.longitude})
-            </Text>
+            {locationStatus.status !== 2 && (
+              <Text style={[styles.headerStatus2]}>
+                {location.latitude}, {location.longitude}{" "}
+              </Text>
+            )}
           </View>
           <View style={styles.content}>
             <View style={{ flex: 2 }}>
@@ -343,13 +375,14 @@ const CheckInScreen = () => {
             </View>
             <View style={styles.mapContainer}>
               <View style={[styles.map, { borderColor: theme.colors.primary }]}>
-                {location && locations ? (
-                  <WebView
-                    originWhitelist={["*"]}
-                    javaScriptEnabled={true}
-                    domStorageEnabled={true}
-                    source={{
-                      html: `
+                {location && locations.length > 0 && locationStatus !== 2 ? (
+                  <>
+                    <WebView
+                      originWhitelist={["*"]}
+                      javaScriptEnabled={true}
+                      domStorageEnabled={true}
+                      source={{
+                        html: `
                 <!DOCTYPE html>
                 <html>
                 <head>
@@ -382,8 +415,8 @@ const CheckInScreen = () => {
                       }).addTo(map);
 
                       L.marker([${location.latitude}, ${
-                        location.longitude
-                      }]).addTo(map).openPopup();
+                          location.longitude
+                        }]).addTo(map).openPopup();
                       var locations = ${JSON.stringify(locations)};
                       locations.forEach(function(location) {
                         var circle = L.circle([parseFloat(location.LAT), parseFloat(location.LNG)], {
@@ -400,8 +433,9 @@ const CheckInScreen = () => {
                   </script>
                 </body>
                 </html>`,
-                    }}
-                  />
+                      }}
+                    />
+                  </>
                 ) : (
                   <Text>กำลังดึงตำแหน่ง GPS...</Text>
                 )}
@@ -456,7 +490,6 @@ const styles = StyleSheet.create({
   headerStatus: {
     fontSize: 15,
     fontWeight: "bold",
-    paddingTop: 15,
   },
   headerStatusDis: {
     fontSize: 15,
