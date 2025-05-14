@@ -21,24 +21,7 @@ import {
 import { WebView } from "react-native-webview";
 import { useSelector } from "react-redux";
 
-interface LocationData {
-  LAT: string;
-  LNG: string;
-  RADIUS: string;
-  UNIT_NAME: string;
-}
-
-interface LocationStatus {
-  status: boolean;
-  message: string;
-  distance: number;
-}
-
-interface Props {
-  navigation: any;
-}
-
-const CheckInScreen: React.FC<Props> = ({ navigation }) => {
+const CheckInScreen = () => {
   const [refreshing, setRefreshing] = useState(false);
   const { user } = useSelector((state: RootState) => state.auth);
   const onRefresh = () => {
@@ -48,14 +31,13 @@ const CheckInScreen: React.FC<Props> = ({ navigation }) => {
     }, 2000);
   };
 
-  const [loading, setLoading] = useState<boolean>(false);
   const [hasCameraPermission, setHasCameraPermission] = useState<
     boolean | null
   >(null);
   const [hasLocationPermission, setHasLocationPermission] = useState<
     boolean | null
   >(null);
-  const cameraRef = useRef<Camera>(null as any);
+  const cameraRef = useRef<any>(null as any);
   const [photo, setPhoto] = useState<string | null>(null);
   const [location, setLocation] = useState<{
     latitude: number | null;
@@ -63,9 +45,9 @@ const CheckInScreen: React.FC<Props> = ({ navigation }) => {
   }>({ latitude: null, longitude: null });
   const [currentTime, setCurrentTime] = useState<Date>(new Date());
   const [cameraType, setCameraType] = useState<"front" | "back">("front");
-  const [locations, setLocations] = useState<LocationData[]>([]);
+  const [locations, setLocations] = useState<any[]>([]);
   const [loadingLocations, setLoadingLocations] = useState<boolean>(true);
-  const [locationStatus, setLocationStatus] = useState<LocationStatus>({
+  const [locationStatus, setLocationStatus] = useState<any>({
     status: false,
     message: "ไม่สามารถระบุตำแหน่งได้",
     distance: 0,
@@ -154,7 +136,7 @@ const CheckInScreen: React.FC<Props> = ({ navigation }) => {
       return;
     }
 
-    let nearLocation: LocationStatus | null = null;
+    let nearLocation: any = null;
     for (let i = 0; i < locations.length; i++) {
       const distance = haversineDistance(
         lat,
@@ -417,8 +399,7 @@ const CheckInScreen: React.FC<Props> = ({ navigation }) => {
                       });
                   </script>
                 </body>
-                </html>
-              `,
+                </html>`,
                     }}
                   />
                 ) : (
