@@ -1,26 +1,30 @@
+import CustomBackground from "@/components/CustomBackground";
+import CustomText from "@/components/CustomText";
+import { logout, setPin } from "@/core/authSlice";
+import { RootState } from "@/core/store";
+import { theme } from "@/core/theme";
+import { Ionicons } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
+import React, { useEffect, useState } from "react";
 import {
   Image,
   StyleSheet,
   TouchableOpacity,
-  View,
   Vibration,
+  View,
 } from "react-native";
-import React, { useState, useEffect } from "react";
-import CustomBackground from "@/components/CustomBackground";
-import CustomText from "@/components/CustomText";
-import { theme } from "@/core/theme";
 import { Appbar, Avatar } from "react-native-paper";
-import { RootState } from "@/core/store";
 import { useDispatch, useSelector } from "react-redux";
-import { Ionicons } from "@expo/vector-icons";
-import { setPin, logout } from "@/core/authSlice";
-import { useRouter } from "expo-router";
 
 const pinSetting = () => {
   const { user, pin } = useSelector((state: RootState) => state.auth);
   const [pinNum, setPinNum] = useState("");
   const dispatch = useDispatch();
   const router = useRouter();
+
+  const hour = new Date().getHours();
+  const dayTime =
+    hour >= 6 && hour < 12 ? "ตอนเช้า" : hour >= 18 ? "ตอนกลางคืน" : "ตอนบ่าย";
 
   useEffect(() => {
     if (pin) {
@@ -91,7 +95,7 @@ const pinSetting = () => {
           }}
         >
           <CustomText bold style={styles.title}>
-            สวัสดีตอนกลางวันครับ
+            สวัสดี{dayTime}ครับ
           </CustomText>
           <CustomText bold style={styles.title2}>
             {user?.fullname_th}

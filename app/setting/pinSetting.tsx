@@ -1,50 +1,30 @@
 import CustomBackground from "@/components/CustomBackground";
 import CustomText from "@/components/CustomText";
-import { logout, setPinAuthenticated } from "@/core/authSlice";
+import CustomTopBar from "@/components/CustomTopBar";
+import { setPin } from "@/core/authSlice";
 import { RootState } from "@/core/store";
 import { theme } from "@/core/theme";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
-import {
-  Image,
-  Modal,
-  StyleSheet,
-  TouchableOpacity,
-  Vibration,
-  View,
-} from "react-native";
-import { Appbar, Avatar } from "react-native-paper";
+import { StyleSheet, TouchableOpacity, Vibration, View } from "react-native";
 import { useDispatch, useSelector } from "react-redux";
 
-const pinLogin = () => {
-  const { user, pin, isPinAuthenticated } = useSelector(
-    (state: RootState) => state.auth
-  );
+const pinSetting = () => {
+  const { user, pin } = useSelector((state: RootState) => state.auth);
   const [pinNum, setPinNum] = useState("");
   const dispatch = useDispatch();
-  const [error, setError] = useState(false);
-  const [modalLogout, setModalLogout] = useState(false);
   const router = useRouter();
 
   const hour = new Date().getHours();
   const dayTime =
     hour >= 6 && hour < 12 ? "ตอนเช้า" : hour >= 18 ? "ตอนกลางคืน" : "ตอนบ่าย";
 
-  if (isPinAuthenticated) {
-    router.replace("/home");
-  }
   useEffect(() => {
     if (pinNum.length === 6) {
-      if (pinNum === pin) {
-        setPinAuthenticated();
-        router.replace("/home");
-      } else {
-        setPinNum("");
-        setError(true);
-        Vibration.vibrate(200);
-        return;
-      }
+      dispatch(setPin(pinNum));
+      setPinNum("");
+      router.replace("/setting");
     }
   }, [pinNum]);
   const handlePress = (num: string) => {
@@ -52,7 +32,6 @@ const pinLogin = () => {
     if (pinNum.length < 6) {
       setPinNum(pinNum + num);
     }
-    setError(false);
   };
   const handleDelete = () => {
     Vibration.vibrate(80);
@@ -65,30 +44,12 @@ const pinLogin = () => {
     setPinNum("");
   };
 
-  const handleLogout = () => {
-    dispatch(logout());
-    router.replace("/");
-  };
-
   return (
     <CustomBackground style={styles.container}>
-      <Appbar.Header style={{ backgroundColor: "transparent", elevation: 0 }}>
-        <View style={{ flexDirection: "row", alignItems: "center", flex: 1 }}>
-          <Image
-            source={require("@/assets/images/logo.png")}
-            style={{ width: 100, height: 45, marginRight: 10 }}
-            resizeMode="contain"
-          />
-        </View>
-        <Appbar.Action icon="qrcode" color={theme.colors.primary} size={30} />
-        <View>
-          <Avatar.Image
-            size={45}
-            style={styles.avatar}
-            source={{ uri: user?.avatar || "https://i.pravatar.cc/150?img=3" }}
-          />
-        </View>
-      </Appbar.Header>
+      <CustomTopBar
+        title="เปลี่ยน PIN"
+        back={() => router.replace("/setting")}
+      />
       <View
         style={{
           flexDirection: "row",
@@ -112,22 +73,12 @@ const pinLogin = () => {
         </View>
       </View>
       <View style={styles.pinFrame}>
-        <TouchableOpacity
-          onPress={() => setModalLogout(true)}
-          style={{
-            width: "100%",
-            paddingTop: 5,
-            paddingHorizontal: 5,
-            alignItems: "flex-end",
-          }}
-        >
-          <Ionicons name="close" size={32} color={theme.colors.primary} />
-        </TouchableOpacity>
         <View
           style={{
             width: "100%",
             gap: 5,
             justifyContent: "center",
+            paddingTop: 20,
           }}
         >
           <CustomText
@@ -139,9 +90,8 @@ const pinLogin = () => {
               paddingBottom: 20,
             }}
           >
-            กรุณาระบุรหัส PIN 6 หลัก
+            ตั้งรหัส PIN ใหม่
           </CustomText>
-
           <View
             style={{
               flexDirection: "row",
@@ -294,133 +244,11 @@ const pinLogin = () => {
           </View>
         </View>
       </View>
-      <Modal
-        animationType="slide"
-        transparent={true}
-        visible={error}
-        onRequestClose={() => {
-          setError(false);
-        }}
-      >
-        <View style={styles.centeredView}>
-          <View style={styles.modalView}>
-            <CustomText
-              bold
-              style={{
-                fontSize: 18,
-                textAlign: "center",
-                paddingTop: 10,
-              }}
-            >
-              ไม่สามารถทำรายการได้
-            </CustomText>
-            <CustomText
-              style={{
-                textAlign: "center",
-                paddingVertical: 10,
-              }}
-            >
-              รหัส PIN ของคุณไม่ถูกต้อง กรุณาทำรายการใหม่อีกครั้ง
-            </CustomText>
-            <TouchableOpacity
-              style={{
-                backgroundColor: theme.colors.primary,
-                padding: 10,
-                borderRadius: 10,
-                marginTop: 10,
-                width: "100%",
-                alignItems: "center",
-              }}
-              onPress={() => setError(false)}
-            >
-              <CustomText bold style={{ color: "white", fontSize: 14 }}>
-                ตกลง
-              </CustomText>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </Modal>
-
-      <Modal
-        animationType="slide"
-        transparent={true}
-        visible={modalLogout}
-        onRequestClose={() => {
-          setModalLogout(false);
-        }}
-      >
-        <View style={styles.centeredView}>
-          <View style={styles.modalView}>
-            <CustomText
-              bold
-              style={{
-                fontSize: 18,
-                textAlign: "center",
-                paddingTop: 10,
-              }}
-            >
-              ลืมรหัส PIN?
-            </CustomText>
-            <CustomText
-              style={{
-                textAlign: "center",
-                paddingVertical: 10,
-              }}
-            >
-              คุณต้องการออกจากระบบเพื่อตั้งค่า PIN ใหม่หรือไม่?
-            </CustomText>
-            <View
-              style={{
-                flexDirection: "row",
-                justifyContent: "center",
-              }}
-            >
-              <TouchableOpacity
-                style={{
-                  backgroundColor: "white",
-                  borderWidth: 1,
-                  borderColor: theme.colors.primary,
-                  padding: 10,
-                  borderRadius: 10,
-                  marginTop: 10,
-                  width: "48%",
-                  alignItems: "center",
-                  marginRight: 5,
-                }}
-                onPress={() => setModalLogout(false)}
-              >
-                <CustomText
-                  bold
-                  style={{ color: theme.colors.primary, fontSize: 14 }}
-                >
-                  ยกเลิก
-                </CustomText>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={{
-                  backgroundColor: theme.colors.primary,
-                  padding: 10,
-                  borderRadius: 10,
-                  marginTop: 10,
-                  width: "48%",
-                  alignItems: "center",
-                  marginLeft: 5,
-                }}
-                onPress={handleLogout}
-              >
-                <CustomText bold style={{ color: "white", fontSize: 14 }}>
-                  ตกลง
-                </CustomText>
-              </TouchableOpacity>
-            </View>
-          </View>
-        </View>
-      </Modal>
     </CustomBackground>
   );
 };
 
-export default pinLogin;
+export default pinSetting;
 
 const styles = StyleSheet.create({
   container: {
@@ -470,28 +298,6 @@ const styles = StyleSheet.create({
     color: theme.colors.primary,
     fontWeight: "bold",
     textAlign: "center",
-    justifyContent: "center",
-    alignItems: "center",
-  },
-
-  modalView: {
-    backgroundColor: "white",
-    borderRadius: 20,
-    padding: 10,
-    alignItems: "center",
-    shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 4,
-    elevation: 5,
-    gap: 10,
-    width: "90%",
-  },
-  centeredView: {
-    flex: 1,
     justifyContent: "center",
     alignItems: "center",
   },

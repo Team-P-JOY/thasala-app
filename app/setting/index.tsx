@@ -1,26 +1,24 @@
-import {
-  ScrollView,
-  StyleSheet,
-  RefreshControl,
-  View,
-  TouchableOpacity,
-  Image,
-} from "react-native";
-import React, { useState } from "react";
+import App from "@/app.json";
 import CustomBackground from "@/components/CustomBackground";
-import CustomTopBar from "@/components/CustomTopBar";
 import CustomFooterBar from "@/components/CustomFooterBar";
 import CustomText from "@/components/CustomText";
-import { useRouter } from "expo-router";
-import { Ionicons } from "@expo/vector-icons";
-import { RootState } from "@/core/store";
-import { useSelector } from "react-redux";
+import CustomTopBar from "@/components/CustomTopBar";
 import ImageViewer from "@/components/ImageViewer";
-import { theme } from "@/core/theme";
-import App from "@/app.json";
 import Modal from "@/components/Modal";
-import { useDispatch } from "react-redux";
 import { logout } from "@/core/authSlice";
+import { RootState } from "@/core/store";
+import { theme } from "@/core/theme";
+import { Ionicons } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
+import React, { useState } from "react";
+import {
+  RefreshControl,
+  ScrollView,
+  StyleSheet,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import { useDispatch, useSelector } from "react-redux";
 
 const index = () => {
   const [modalVisible, setModalVisible] = useState(false);
@@ -69,7 +67,7 @@ const index = () => {
           <View style={{ margin: 10, gap: 10 }}>
             <TouchableOpacity
               style={styles.itemList}
-              onPress={() => router.push("/home")}
+              onPress={() => router.push("/setting/pinSetting")}
             >
               <View style={styles.itemRow}>
                 <Ionicons

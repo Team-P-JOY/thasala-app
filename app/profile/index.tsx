@@ -1,14 +1,14 @@
-import { ScrollView, StyleSheet, RefreshControl, View } from "react-native";
-import React, { useState } from "react";
 import CustomBackground from "@/components/CustomBackground";
-import CustomTopBar from "@/components/CustomTopBar";
 import CustomFooterBar from "@/components/CustomFooterBar";
 import CustomText from "@/components/CustomText";
-import { RootState } from "@/core/store";
-import { useSelector } from "react-redux";
+import CustomTopBar from "@/components/CustomTopBar";
 import ImageViewer from "@/components/ImageViewer";
+import { RootState } from "@/core/store";
 import { theme } from "@/core/theme";
+import React, { useState } from "react";
+import { RefreshControl, ScrollView, StyleSheet, View } from "react-native";
 import QRCode from "react-native-qrcode-svg";
+import { useSelector } from "react-redux";
 
 const index = () => {
   const [refreshing, setRefreshing] = useState(false);
@@ -21,7 +21,7 @@ const index = () => {
   };
   return (
     <CustomBackground>
-      <CustomTopBar title="โปรไฟล์" />
+      <CustomTopBar title="" />
       <ScrollView
         contentContainerStyle={{ flexGrow: 1 }}
         refreshControl={
@@ -95,6 +95,7 @@ const styles = StyleSheet.create({
   },
 
   profileName: {
+    paddingTop: 20,
     fontSize: 20,
     color: theme.colors.primary,
   },
