@@ -7,8 +7,10 @@ import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
 import { useEffect } from "react";
+import { SafeAreaView } from "react-native";
 import { PaperProvider } from "react-native-paper";
 import "react-native-reanimated";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Provider as StoreProvider, useDispatch } from "react-redux";
 
 SplashScreen.preventAutoHideAsync();
@@ -18,6 +20,7 @@ const MENU_STORAGE_KEY = "thasala@menu";
 const PIN_STORAGE_KEY = "thasala@pin";
 
 function AppContent() {
+  const insets = useSafeAreaInsets();
   const dispatch = useDispatch();
 
   useEffect(() => {
@@ -49,7 +52,13 @@ function AppContent() {
   }, [dispatch]);
 
   return (
-    <>
+    <SafeAreaView
+      style={{
+        flex: 1,
+        paddingBottom: insets.bottom,
+        backgroundColor: theme.colors.primary,
+      }}
+    >
       <PaperProvider theme={theme}>
         <Stack>
           <Stack.Screen name="index" options={{ headerShown: false }} />
@@ -68,7 +77,7 @@ function AppContent() {
         </Stack>
         <StatusBar style="auto" />
       </PaperProvider>
-    </>
+    </SafeAreaView>
   );
 }
 
