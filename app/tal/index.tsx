@@ -1,0 +1,111 @@
+import CustomBackground from "@/components/CustomBackground";
+import CustomFooterBar from "@/components/CustomFooterBar";
+import CustomText from "@/components/CustomText";
+import CustomTopBar from "@/components/CustomTopBar";
+import ImageViewer from "@/components/ImageViewer";
+import { RootState } from "@/core/store";
+import { theme } from "@/core/theme";
+import { useState } from "react";
+import { RefreshControl, ScrollView, StyleSheet, View } from "react-native";
+import QRCode from "react-native-qrcode-svg";
+import { useSelector } from "react-redux";
+
+const index = () => {
+  const [refreshing, setRefreshing] = useState(false);
+  const { user } = useSelector((state: RootState) => state.auth);
+  const onRefresh = () => {
+    setRefreshing(true);
+    setTimeout(() => {
+      setRefreshing(false);
+    }, 2000);
+  };
+  return (
+    <CustomBackground>
+      <CustomTopBar title="เวลาทำงาน" />
+      <ScrollView
+        contentContainerStyle={{ flexGrow: 1 }}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
+      >
+        <View style={styles.profileContainer}>
+          <ImageViewer
+            imgSource={user?.avatar}
+            selectedImage={require("@/assets/images/icon.png")}
+            size={120}
+          />
+
+          <CustomText bold style={styles.profileName}>
+            {user?.fullname_th}
+          </CustomText>
+          <CustomText bold style={styles.roleName}>
+            {user?.position_th}
+          </CustomText>
+          <CustomText bold style={styles.roleName}>
+            {user?.division_th}
+          </CustomText>
+        </View>
+
+        <View
+          style={{
+            paddingVertical: 15,
+            alignItems: "center",
+          }}
+        >
+          <View
+            style={{
+              padding: 10,
+              backgroundColor: theme.colors.background,
+              borderRadius: 10,
+            }}
+          >
+            {user && (
+              <QRCode
+                value={user?.person_id}
+                size={250}
+                backgroundColor={theme.colors.background}
+                color={theme.colors.primary}
+              />
+            )}
+          </View>
+          <CustomText style={[styles.token, { color: theme.colors.onPrimary }]}>
+            {user?.token || "ไม่มี Token"}
+          </CustomText>
+        </View>
+      </ScrollView>
+      <CustomFooterBar />
+    </CustomBackground>
+  );
+};
+
+export default index;
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+  profileContainer: {
+    alignItems: "center",
+    padding: 10,
+  },
+  profileImage: {
+    width: 90,
+    height: 90,
+    borderRadius: 40,
+  },
+
+  profileName: {
+    fontSize: 20,
+    color: theme.colors.primary,
+  },
+  roleName: {
+    color: theme.colors.primary,
+  },
+  token: {
+    fontSize: 8,
+    // alignSelf: "flex-end",
+    alignItems: "center",
+    marginTop: 5,
+    color: "gray",
+  },
+});
