@@ -18,7 +18,7 @@ const INITIAL_MENU = [
     key: 2,
     label: "เวลาทำงาน",
     icon: "time-outline",
-    route: "/home",
+    route: "/tal",
     show: true,
   },
   {

@@ -72,7 +72,7 @@ function AppContent() {
           <Stack.Screen name="checkin" options={{ headerShown: false }} />
 
           <Stack.Screen name="portal" options={{ headerShown: false }} />
-
+          <Stack.Screen name="tal" options={{ headerShown: false }} />
           <Stack.Screen name="+not-found" options={{ headerShown: false }} />
         </Stack>
         <StatusBar style="auto" />
