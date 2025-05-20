@@ -1,13 +1,11 @@
 import CustomBackground from "@/components/CustomBackground";
 import CustomFooterBar from "@/components/CustomFooterBar";
-import CustomText from "@/components/CustomText";
 import CustomTopBar from "@/components/CustomTopBar";
-import ImageViewer from "@/components/ImageViewer";
 import { RootState } from "@/core/store";
 import { theme } from "@/core/theme";
-import { useState } from "react";
-import { RefreshControl, ScrollView, StyleSheet, View } from "react-native";
-import QRCode from "react-native-qrcode-svg";
+import { useEffect, useState } from "react";
+import { RefreshControl, ScrollView, StyleSheet, TouchableOpacity, View } from "react-native";
+import { Avatar, Text } from "react-native-paper";
 import { useSelector } from "react-redux";
 
 const index = () => {
@@ -19,59 +17,112 @@ const index = () => {
       setRefreshing(false);
     }, 2000);
   };
+
+
+
+  const menu = [
+    {
+      name: "Dashboard",
+      desc: "สถิติบันทึกการปฏิบัติงาน",
+      screen: "Home",
+      icon: "chart-arc",
+    },
+    {
+      name: "ตารางปฏิบัติงาน",
+      desc: "สถานะการปฏิบัติงาน",
+      screen: "Schedule",
+      icon: "calendar-month",
+    },
+    {
+      name: "Timestamp",
+      desc: "สแกนนิ้ว เข้า/ออก",
+      screen: "Timestamp",
+      icon: "calendar-clock",
+    },
+    {
+      name: "บันทึกการลา",
+      desc: "สถิติบันทึกการลา",
+      screen: "Leave",
+      icon: "account-arrow-right",
+    },
+  ];
+
+  let curDate = new Date();
+  let curMonth = curDate.getMonth() + 1;
+  let curYear = curDate.getFullYear() + 543;
+  let monthly = curMonth < 10 ? "0" + curMonth : curMonth;
+  monthly = monthly + "-" + curYear;
+  console.log("this month " + monthly);
+
+  const [optionMonth, setOptionMonth] = useState([]);
+  const [month, setMonth] = useState(monthly);
+  const [shift, setShift] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+   // ✅ State ควบคุมการเปิด/ปิด Menu
+  const [menuVisible, setMenuVisible] = useState(false);
+
+  // ✅ ฟังก์ชันเปิด-ปิด Menu
+  const openMenu = () => setMenuVisible(true);
+  const closeMenu = () => setMenuVisible(false);
+
+
+  useEffect(() => {
+    if (loading == true) {
+      // initSelectMonth();
+      fetch(
+        `https://apisprd.wu.ac.th/tal/tal-timework/get-schedule?personId=${user.person_id}&month=${month}`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      )
+        .then((response) => response.json())
+        .then((data) => {
+          console.log(data);
+          if (data.code === 200) {
+            setShift(data.dtSchedule);
+            setLoading(false);
+          }
+        });
+    }
+  }, [loading]);
+  
   return (
     <CustomBackground>
       <CustomTopBar title="เวลาทำงาน" />
+      <ScrollView
+        horizontal={true} 
+        showsHorizontalScrollIndicator={false}
+        style={styles.scrollView}
+      >
+        <View style={styles.menuContainer}>
+          {menu.map((m, index) => (
+            <TouchableOpacity
+              key={index}
+              onPress={() =>
+                console.log("Go to", m.screen)
+              }
+            >
+              <View style={styles.menuChild}>
+                <Avatar.Icon size={80} icon={m.icon} style={styles.avatarIcon} />
+                <Text variant="bodySmall" style={styles.textName}>{m.name}</Text>
+              </View>
+            </TouchableOpacity>
+          ))}
+        </View>
+      </ScrollView>
+
+
       <ScrollView
         contentContainerStyle={{ flexGrow: 1 }}
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
         }
       >
-        <View style={styles.profileContainer}>
-          <ImageViewer
-            imgSource={user?.avatar}
-            selectedImage={require("@/assets/images/icon.png")}
-            size={120}
-          />
-
-          <CustomText bold style={styles.profileName}>
-            {user?.fullname_th}
-          </CustomText>
-          <CustomText bold style={styles.roleName}>
-            {user?.position_th}
-          </CustomText>
-          <CustomText bold style={styles.roleName}>
-            {user?.division_th}
-          </CustomText>
-        </View>
-
-        <View
-          style={{
-            paddingVertical: 15,
-            alignItems: "center",
-          }}
-        >
-          <View
-            style={{
-              padding: 10,
-              backgroundColor: theme.colors.background,
-              borderRadius: 10,
-            }}
-          >
-            {user && (
-              <QRCode
-                value={user?.person_id}
-                size={250}
-                backgroundColor={theme.colors.background}
-                color={theme.colors.primary}
-              />
-            )}
-          </View>
-          <CustomText style={[styles.token, { color: theme.colors.onPrimary }]}>
-            {user?.token || "ไม่มี Token"}
-          </CustomText>
-        </View>
+        
       </ScrollView>
       <CustomFooterBar />
     </CustomBackground>
@@ -82,7 +133,10 @@ export default index;
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
+    marginTop: 0,
+  },
+  title: {
+    marginBottom: 20,
   },
   profileContainer: {
     alignItems: "center",
@@ -106,6 +160,42 @@ const styles = StyleSheet.create({
     // alignSelf: "flex-end",
     alignItems: "center",
     marginTop: 5,
+    color: "gray",
+  },
+  scrollView: {
+    padding: 10, 
+    height: "auto", 
+    // backgroundColor: "#000",
+    // flexGrow: 1
+  },
+  menuContainer: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    justifyContent: "space-between",
+    //paddingHorizontal: 10,
+    //backgroundColor: "#ff0000",
+  },
+  menuChild:{
+    alignItems: "center", 
+    width: 100, 
+    //height: 100, 
+    // borderRightColor: "#0000ff",
+    // borderRightWidth:2,
+  },
+  avatarIcon: {
+    backgroundColor: "#C3A7F4",
+    borderWidth: 1,
+    borderColor: "#ccc",
+  },
+  textName:{
+    marginTop: 5
+  },
+  labelDate: {
+    color: "gray",
+    fontSize: 14,
+  },
+  textStatus: {
+    textAlign: "center",
     color: "gray",
   },
 });
