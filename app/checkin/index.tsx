@@ -7,6 +7,9 @@ import { useFocusEffect } from "@react-navigation/native";
 import { Camera, CameraView } from "expo-camera";
 import * as Location from "expo-location";
 import { useRouter } from "expo-router";
+import { Platform, ToastAndroid } from "react-native";
+
+
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
@@ -30,6 +33,50 @@ const CheckInScreen = () => {
       setRefreshing(false);
     }, 2000);
   };
+const submitCheckinStatus = async (status: number) => {
+if (!location.latitude || !location.longitude || !user?.person_id) {
+  alert(
+    `ไม่สามารถส่งข้อมูลได้:\n` +
+    `personId: ${user?.person_id ?? "ไม่มี"}\n` +
+    `latitude: ${location.latitude ?? "ไม่มี"}\n` +
+    `longitude: ${location.longitude ?? "ไม่มี"}`
+  );
+  return;
+}
+
+  const formData = new FormData();
+  formData.append("personId", user.person_id.toString());
+  formData.append("status", status.toString()); // 3 = เข้างาน, 4 = ออกงาน (สมมติ)
+  formData.append("lat", location.latitude.toString());
+  formData.append("lng", location.longitude.toString());
+  formData.append("device", Platform.OS); // 'ios' หรือ 'android'
+  formData.append("unitId", locationStatus.unitId?.toString() ?? "");
+  formData.append("distance", locationStatus.distance.toString());
+  formData.append("radius", "60");
+
+  try {
+    const response = await fetch("https://apisqas.wu.ac.th/tal/tal-timework/timestamp", {
+      method: "POST",
+      body: formData,
+    });
+
+    const result = await response.json();
+    if (result.code === 200) {
+ToastAndroid.show("บันทึกสำเร็จ", ToastAndroid.SHORT);
+    setPhoto(null);
+  _callCurrentLocation();
+
+    } else {
+    //  ToastAndroid.show("บันทึกสำเร็จ", ToastAndroid.SHORT);
+
+    //  alert("บันทึกล้มเหลว: " + result.message);
+      
+    }
+  } catch (error) {
+    console.error("Submit Error:", error);
+    alert("เกิดข้อผิดพลาดขณะส่งข้อมูล");
+  }
+};
 
   const [hasCameraPermission, setHasCameraPermission] = useState<
     boolean | null
@@ -158,6 +205,7 @@ const CheckInScreen = () => {
         nearLocation = {
           status: status,
           message: locations[i].UNIT_NAME,
+          unitId: locations[i].UNIT_ID, // ⬅️ เพิ่มตรงนี้
           distance: distanceRadius,
         };
         if (status) break;
@@ -172,6 +220,7 @@ const CheckInScreen = () => {
             ? `อยู่ใน ${nearLocation.message}`
             : `อยู่ใกล้ ${nearLocation.message}`,
         distance: Math.max(nearLocation.distance, 0),
+        unitId: nearLocation.unitId, // ⬅️ เพิ่มตรงนี้
       });
     } else {
       setLocationStatus({
@@ -339,24 +388,37 @@ const CheckInScreen = () => {
                   ref={cameraRef}
                 >
                   <View style={styles.buttonContainer}>
-                    <TouchableOpacity
-                      style={styles.captureButton}
-                      onPress={takePicture}
-                    >
-                      <Text style={styles.buttonText}>เข้างาน</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                      style={styles.captureButton}
-                      onPress={takePicture}
-                    >
-                      <Text style={styles.buttonText}>ออกงาน</Text>
-                    </TouchableOpacity>
+                <TouchableOpacity
+  style={styles.captureButton}
+  onPress={() => {
+    takePicture();
+    submitCheckinStatus(locationStatus.status === 1 ? 2 : 92);
+  }}
+>
+  <Text style={styles.buttonText}>
+    {locationStatus.status === 1 ? "เข้างาน" : "เข้างานนอกพื้นที่"}
+  </Text>
+</TouchableOpacity>
+
+<TouchableOpacity
+  style={styles.captureButton}
+  onPress={() => {
+    takePicture();
+    submitCheckinStatus(locationStatus.status === 1 ? 3 : 93);
+  }}
+>
+  <Text style={styles.buttonText}>
+    {locationStatus.status === 1 ? "ออกงาน" : "ออกงานนอกพื้นที่"}
+  </Text>
+</TouchableOpacity>
+
+
                   </View>
                 </CameraView>
               ) : (
                 <View style={styles.camera}>
                   <Image source={{ uri: photo }} style={styles.image} />
-                  <View style={styles.buttonContainer}>
+                  {/* <View style={styles.buttonContainer}>
                     <TouchableOpacity
                       style={styles.captureButton}
                       onPress={() => setPhoto(null)}
@@ -369,7 +431,7 @@ const CheckInScreen = () => {
                     >
                       <Text style={styles.buttonText}>📸 ถ่ายใหม่</Text>
                     </TouchableOpacity>
-                  </View>
+                  </View> */}
                 </View>
               )}
             </View>
