@@ -68,6 +68,8 @@ function AppContent() {
           <Stack.Screen name="news" options={{ headerShown: false }} />
           <Stack.Screen name="scan" options={{ headerShown: false }} />
           <Stack.Screen name="profile" options={{ headerShown: false }} />
+                    <Stack.Screen name="noti" options={{ headerShown: false }} />
+
           <Stack.Screen name="setting" options={{ headerShown: false }} />
           <Stack.Screen name="checkin" options={{ headerShown: false }} />
 

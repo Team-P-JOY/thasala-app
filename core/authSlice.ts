@@ -32,7 +32,7 @@ const INITIAL_MENU = [
     key: 4,
     label: "แจ้งเตือน",
     icon: "notifications-outline",
-    route: "/home",
+    route: "/noti",
     show: true,
   },
   {
