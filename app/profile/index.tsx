@@ -3,9 +3,10 @@ import CustomFooterBar from "@/components/CustomFooterBar";
 import CustomText from "@/components/CustomText";
 import CustomTopBar from "@/components/CustomTopBar";
 import ImageViewer from "@/components/ImageViewer";
+import { registerForPushNotifications } from "@/core/notifications";
 import { RootState } from "@/core/store";
 import { theme } from "@/core/theme";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { RefreshControl, ScrollView, StyleSheet, View } from "react-native";
 import QRCode from "react-native-qrcode-svg";
 import { useSelector } from "react-redux";
@@ -13,12 +14,20 @@ import { useSelector } from "react-redux";
 const index = () => {
   const [refreshing, setRefreshing] = useState(false);
   const { user } = useSelector((state: RootState) => state.auth);
+  const [expoPushToken, setExpoPushToken] = useState<any>('');
   const onRefresh = () => {
     setRefreshing(true);
     setTimeout(() => {
       setRefreshing(false);
     }, 2000);
   };
+
+  useEffect(() => {
+    // Get and Set the Push Token
+    registerForPushNotifications().then((token) => setExpoPushToken(token));
+    console.log('Push Notification Token:', expoPushToken);
+  }, []);
+
   return (
     <CustomBackground>
       <CustomTopBar title="" />
@@ -43,6 +52,9 @@ const index = () => {
           </CustomText>
           <CustomText bold style={styles.roleName}>
             {user?.division_th}
+          </CustomText>
+          <CustomText bold style={styles.roleName}>
+            {expoPushToken}
           </CustomText>
         </View>
 
