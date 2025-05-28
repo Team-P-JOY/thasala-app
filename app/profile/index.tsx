@@ -1,20 +1,25 @@
 import CustomBackground from "@/components/CustomBackground";
 import CustomFooterBar from "@/components/CustomFooterBar";
 import CustomText from "@/components/CustomText";
-import CustomTopBar from "@/components/CustomTopBar";
 import ImageViewer from "@/components/ImageViewer";
 import { registerForPushNotifications } from "@/core/notifications";
 import { RootState } from "@/core/store";
 import { theme } from "@/core/theme";
 import React, { useEffect, useState } from "react";
-import { RefreshControl, ScrollView, StyleSheet, View } from "react-native";
+import {
+  Image,
+  RefreshControl,
+  ScrollView,
+  StyleSheet,
+  View,
+} from "react-native";
 import QRCode from "react-native-qrcode-svg";
 import { useSelector } from "react-redux";
 
 const index = () => {
   const [refreshing, setRefreshing] = useState(false);
   const { user } = useSelector((state: RootState) => state.auth);
-  const [expoPushToken, setExpoPushToken] = useState<any>('');
+  const [expoPushToken, setExpoPushToken] = useState<any>("");
   const onRefresh = () => {
     setRefreshing(true);
     setTimeout(() => {
@@ -29,25 +34,28 @@ const index = () => {
   useEffect(() => {
     // Get and Set the Push Token
     registerForPushNotifications().then((token) => setExpoPushToken(token));
-    console.log('Push Notification Token:', expoPushToken);
+    // console.log("Push Notification Token:", expoPushToken);
   }, []);
 
   return (
     <CustomBackground>
-      <CustomTopBar title="" />
+      {/* <CustomTopBar title="" /> */}
+
       <ScrollView
         contentContainerStyle={{ flexGrow: 1 }}
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
         }
       >
+        <View style={styles.coverView}>
+          <Image source={{ uri: user?.cover }} style={styles.coverImage} />
+        </View>
         <View style={styles.profileContainer}>
           <ImageViewer
             imgSource={user?.avatar}
             selectedImage={require("@/assets/images/icon.png")}
             size={120}
           />
-
           <CustomText bold style={styles.profileName}>
             {user?.fullname_th}
           </CustomText>
@@ -57,17 +65,9 @@ const index = () => {
           <CustomText bold style={styles.roleName}>
             {user?.division_th}
           </CustomText>
-          <CustomText bold style={styles.roleName}>
-            {expoPushToken}
-          </CustomText>
         </View>
 
-        <View
-          style={{
-            paddingVertical: 15,
-            alignItems: "center",
-          }}
-        >
+        <View style={{ paddingVertical: 15, alignItems: "center" }}>
           <View
             style={{
               padding: 10,
@@ -85,7 +85,7 @@ const index = () => {
             )}
           </View>
           <CustomText style={[styles.token, { color: theme.colors.onPrimary }]}>
-            {user?.token || "ไม่มี Token"}
+            {expoPushToken || "ไม่มี Token"}
           </CustomText>
         </View>
       </ScrollView>
@@ -100,6 +100,20 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
+  coverView: {
+    width: "100%",
+    height: 140,
+    backgroundColor: theme.colors.primary,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  coverImage: {
+    width: "100%",
+    height: 200,
+    resizeMode: "cover",
+    position: "absolute",
+    top: 0,
+  },
   profileContainer: {
     alignItems: "center",
     padding: 10,
@@ -109,7 +123,6 @@ const styles = StyleSheet.create({
     height: 90,
     borderRadius: 40,
   },
-
   profileName: {
     paddingTop: 20,
     fontSize: 20,
@@ -120,7 +133,6 @@ const styles = StyleSheet.create({
   },
   token: {
     fontSize: 8,
-    // alignSelf: "flex-end",
     alignItems: "center",
     marginTop: 5,
     color: "gray",
