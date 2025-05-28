@@ -7,7 +7,7 @@ import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
 import { useEffect } from "react";
-import { SafeAreaView } from "react-native";
+import { Platform, SafeAreaView, View } from "react-native";
 import { PaperProvider } from "react-native-paper";
 import "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -22,6 +22,7 @@ const PIN_STORAGE_KEY = "thasala@pin";
 function AppContent() {
   const insets = useSafeAreaInsets();
   const dispatch = useDispatch();
+  const Wrapper = Platform.OS === "android" ? SafeAreaView : View;
 
   useEffect(() => {
     async function loadAuth() {
@@ -52,7 +53,7 @@ function AppContent() {
   }, [dispatch]);
 
   return (
-    <SafeAreaView
+    <Wrapper
       style={{
         flex: 1,
         paddingBottom: insets.bottom,
@@ -79,7 +80,7 @@ function AppContent() {
         </Stack>
         <StatusBar style="auto" />
       </PaperProvider>
-    </SafeAreaView>
+    </Wrapper>
   );
 }
 

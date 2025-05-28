@@ -6,6 +6,7 @@ import { registerForPushNotifications } from "@/core/notifications";
 import { theme } from "@/core/theme";
 import { dataValidator } from "@/core/utils";
 import axios from "axios";
+import * as Device from "expo-device";
 import { useRouter } from "expo-router";
 import React, { useState } from "react";
 import { Image, StyleSheet, TouchableOpacity, View } from "react-native";
@@ -21,7 +22,6 @@ const Login = () => {
   });
   const [loading, setLoading] = useState(false);
   const dispatch = useDispatch();
-  //const expoToken = "12345as";
   const [expoPushToken, setExpoPushToken] = useState<any>('');
 
   const loginApi = async (username: string, password: string) => {
@@ -31,12 +31,13 @@ const Login = () => {
     });
 
     if (res.data.status === "success") {
-      //const responseRegisterApp = await registerApp("123456", "abc12345");
-      //console.log("Login Success:", res.data.data);
-      
+      const expoToken = await registerForPushNotifications();
+      const osname = await Device.osName;
+      //console.log("Expo Push Token:", expoToken);
       const formData = new FormData();
       formData.append("personId", res.data.data.person_id);
-      formData.append("expoToken", expoPushToken);
+      formData.append("expoToken", expoToken ?? "");
+      formData.append("osname", osname ?? "");
     
       try {
         const response = await fetch("http://10.250.2.9/apis/mbl/mbl-register/registerApp", {
@@ -60,33 +61,6 @@ const Login = () => {
     }
   };
 
-  const registerApp = async (personId: string, expoToken: string) => {
-    // const res = await axios.post("http://localhost/apis/mbl/mbl-register/registerApp", {
-    //   personId,
-    //   expoToken,
-    // });
-
-      const formData = new FormData();
-      formData.append("personId", personId);
-      formData.append("expoToken", expoToken);
-    
-      try {
-        const response = await fetch("http://10.250.2.9/apis/mbl/mbl-register/registerApp", {
-          method: "POST",
-          body: formData,
-        });
-    
-        const result = await response.json();
-        if (result.code === 200) {
-          console.error("Success:");
-        } 
-      } 
-      catch (error) {
-        console.error("Submit Error:", error);
-        alert("เกิดข้อผิดพลาดขณะส่งข้อมูล");
-      }
-  };
-
   const _onLoginPressed = async () => {
     const userError = dataValidator(username.value, "Username ");
     const passwordError = dataValidator(password.value, "Password ");
@@ -96,8 +70,6 @@ const Login = () => {
       return;
     }
 
-    registerForPushNotifications().then((token) => setExpoPushToken(token));
-    console.log('Push Notification Token:', expoPushToken);
     setLoading(true);
     const response = await loginApi(username.value, password.value);
     console.log(response);
