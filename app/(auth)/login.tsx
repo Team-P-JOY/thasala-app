@@ -1,15 +1,16 @@
-import { Image, StyleSheet, TouchableOpacity, View } from "react-native";
-import React, { useState } from "react";
 import CustomBackground from "@/components/CustomBackground";
 import CustomText from "@/components/CustomText";
-import { ActivityIndicator } from "react-native-paper";
 import CustomTextInput from "@/components/CustomTextInput";
+import { login } from "@/core/authSlice";
+import { registerForPushNotifications } from "@/core/notifications";
 import { theme } from "@/core/theme";
 import { dataValidator } from "@/core/utils";
-import { useRouter } from "expo-router";
-import { useDispatch } from "react-redux";
-import { login } from "@/core/authSlice";
 import axios from "axios";
+import { useRouter } from "expo-router";
+import React, { useState } from "react";
+import { Image, StyleSheet, TouchableOpacity, View } from "react-native";
+import { ActivityIndicator } from "react-native-paper";
+import { useDispatch } from "react-redux";
 
 const Login = () => {
   const router = useRouter();
@@ -20,6 +21,8 @@ const Login = () => {
   });
   const [loading, setLoading] = useState(false);
   const dispatch = useDispatch();
+  //const expoToken = "12345as";
+  const [expoPushToken, setExpoPushToken] = useState<any>('');
 
   const loginApi = async (username: string, password: string) => {
     const res = await axios.post("https://hrms.wu.ac.th/index.php?r=api/auth", {
@@ -28,10 +31,60 @@ const Login = () => {
     });
 
     if (res.data.status === "success") {
+      //const responseRegisterApp = await registerApp("123456", "abc12345");
+      //console.log("Login Success:", res.data.data);
+      
+      const formData = new FormData();
+      formData.append("personId", res.data.data.person_id);
+      formData.append("expoToken", expoPushToken);
+    
+      try {
+        const response = await fetch("http://10.250.2.9/apis/mbl/mbl-register/registerApp", {
+          method: "POST",
+          body: formData,
+        });
+    
+        const result = await response.json();
+        if (result.code === 200) {
+          //console.error("Success:");
+        } 
+      } 
+      catch (error) {
+        // console.error("Submit Error:", error);
+        // alert("เกิดข้อผิดพลาดขณะส่งข้อมูล");
+      }
+
       return res.data.data;
     } else {
       return "";
     }
+  };
+
+  const registerApp = async (personId: string, expoToken: string) => {
+    // const res = await axios.post("http://localhost/apis/mbl/mbl-register/registerApp", {
+    //   personId,
+    //   expoToken,
+    // });
+
+      const formData = new FormData();
+      formData.append("personId", personId);
+      formData.append("expoToken", expoToken);
+    
+      try {
+        const response = await fetch("http://10.250.2.9/apis/mbl/mbl-register/registerApp", {
+          method: "POST",
+          body: formData,
+        });
+    
+        const result = await response.json();
+        if (result.code === 200) {
+          console.error("Success:");
+        } 
+      } 
+      catch (error) {
+        console.error("Submit Error:", error);
+        alert("เกิดข้อผิดพลาดขณะส่งข้อมูล");
+      }
   };
 
   const _onLoginPressed = async () => {
@@ -43,6 +96,8 @@ const Login = () => {
       return;
     }
 
+    registerForPushNotifications().then((token) => setExpoPushToken(token));
+    console.log('Push Notification Token:', expoPushToken);
     setLoading(true);
     const response = await loginApi(username.value, password.value);
     console.log(response);

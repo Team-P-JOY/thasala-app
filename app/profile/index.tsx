@@ -22,6 +22,10 @@ const index = () => {
     }, 2000);
   };
 
+  // Get the device's system name (e.g., iOS, Android)
+  //const totalMemory = DeviceInfo.getTotalMemory();
+  //console.log('System Name:', systemName);
+
   useEffect(() => {
     // Get and Set the Push Token
     registerForPushNotifications().then((token) => setExpoPushToken(token));
