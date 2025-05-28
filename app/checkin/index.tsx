@@ -59,10 +59,10 @@ const submitCheckinStatus = async (status: number) => {
   const formData = new FormData();
   formData.append("personId", user.person_id.toString());
   formData.append("status", status.toString());
-  formData.append("lat", location.latitude.toString());
-  formData.append("lng", location.longitude.toString());
+formData.append("lat", location.latitude.toString().substring(0, 10));
+formData.append("lng", location.longitude.toString().substring(0, 10));
   formData.append("device", Platform.OS);
-  formData.append("unitId", locationStatus.unitId?.toString() ?? "");
+  formData.append("unitId", locationStatus.unitId?.toString() ?? "1");
   formData.append("distance", locationStatus.distance.toString());
   formData.append("radius", "60");
   formData.append("remark", locationStatus.status !== 1 ? reason : "");
@@ -82,12 +82,10 @@ const submitCheckinStatus = async (status: number) => {
     console.log(result);
     if (result.code === 200) {
       ToastAndroid.show("บันทึกสำเร็จ", ToastAndroid.SHORT);
-      setPhoto(null);
-      setReason("");
-      setReasonError(false);
-      _callCurrentLocation();
+
     } else {
       alert("บันทึกล้มเหลว: " + JSON.stringify(result));
+
     }
   } catch (error) {
     console.error("Submit Error:", error);
@@ -176,6 +174,7 @@ const submitCheckinStatus = async (status: number) => {
         status: 0,
         message: "ไม่พบสถานที่",
         distance: 0,
+        unitId: 0,
       });
       return;
     }
@@ -196,10 +195,11 @@ const submitCheckinStatus = async (status: number) => {
         nearLocation === null ||
         distanceRadius < nearLocation.distance
       ) {
+      //  console.log(locations[i]);
         nearLocation = {
           status: status,
           message: locations[i].UNIT_NAME,
-          unitId: locations[i].UNIT_ID,
+          unitId: locations[i].TIME_POINT_ID,
           distance: distanceRadius,
         };
         if (status) break;
@@ -207,12 +207,13 @@ const submitCheckinStatus = async (status: number) => {
     }
 
     if (nearLocation) {
+    //  console.log("ใกล้สถานที่:", nearLocation);
       setLocationStatus({
         status: nearLocation.distance < 0 ? 1 : 0,
         message:
           nearLocation.distance < 0
-            ? `อยู่ใน ${nearLocation.message}`
-            : `อยู่ใกล้ ${nearLocation.message}`,
+            ? `พื้นที่ ${nearLocation.message}`
+            : `ใกล้ ${nearLocation.message}`,
         distance: Math.max(nearLocation.distance, 0),
         unitId: nearLocation.unitId,
       });
@@ -220,7 +221,8 @@ const submitCheckinStatus = async (status: number) => {
       setLocationStatus({
         status: 0,
         message: "ไม่ได้อยู่ในพื้นที่",
-        distance: 0,
+        unitId: nearLocation.unitId,
+        distance: Math.max(nearLocation.distance, 0),
       });
     }
   };
@@ -361,8 +363,12 @@ const submitCheckinStatus = async (status: number) => {
                   },
                 ]}
               >
-                (ระยะห่าง {locationStatus.distance.toFixed(2)} ม.)
-              </Text>
+(
+    ระยะห่าง
+    {locationStatus.distance < 1000
+      ? ` ${locationStatus.distance.toFixed(2)} ม.`
+      : ` ${(locationStatus.distance / 1000).toFixed(2)} กม.`}
+  )              </Text>
             ) : (
               ""
             )}
