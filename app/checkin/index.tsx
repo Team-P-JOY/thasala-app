@@ -7,17 +7,17 @@ import { useFocusEffect } from "@react-navigation/native";
 import { Camera, CameraView } from "expo-camera";
 import * as Location from "expo-location";
 import { useRouter } from "expo-router";
-import { Platform, ToastAndroid } from "react-native";
-
-
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
   Image,
+  Platform,
   RefreshControl,
   ScrollView,
   StyleSheet,
   Text,
+  TextInput,
+  ToastAndroid,
   TouchableOpacity,
   View,
 } from "react-native";
@@ -27,69 +27,14 @@ import { useSelector } from "react-redux";
 const CheckInScreen = () => {
   const [refreshing, setRefreshing] = useState(false);
   const { user } = useSelector((state: RootState) => state.auth);
-  const onRefresh = () => {
-    setRefreshing(true);
-    setTimeout(() => {
-      setRefreshing(false);
-    }, 2000);
-  };
-const submitCheckinStatus = async (status: number) => {
-if (!location.latitude || !location.longitude || !user?.person_id) {
-  alert(
-    `ไม่สามารถส่งข้อมูลได้:\n` +
-    `personId: ${user?.person_id ?? "ไม่มี"}\n` +
-    `latitude: ${location.latitude ?? "ไม่มี"}\n` +
-    `longitude: ${location.longitude ?? "ไม่มี"}`
-  );
-  return;
-}
+  const [reason, setReason] = useState("");
+  const [reasonError, setReasonError] = useState(false);
 
-  const formData = new FormData();
-  formData.append("personId", user.person_id.toString());
-  formData.append("status", status.toString()); // 3 = เข้างาน, 4 = ออกงาน (สมมติ)
-  formData.append("lat", location.latitude.toString());
-  formData.append("lng", location.longitude.toString());
-  formData.append("device", Platform.OS); // 'ios' หรือ 'android'
-  formData.append("unitId", locationStatus.unitId?.toString() ?? "");
-  formData.append("distance", locationStatus.distance.toString());
-  formData.append("radius", "60");
-
-  try {
-    const response = await fetch("https://apisqas.wu.ac.th/tal/tal-timework/timestamp", {
-      method: "POST",
-      body: formData,
-    });
-
-    const result = await response.json();
-    if (result.code === 200) {
-ToastAndroid.show("บันทึกสำเร็จ", ToastAndroid.SHORT);
-    setPhoto(null);
-  _callCurrentLocation();
-
-    } else {
-    //  ToastAndroid.show("บันทึกสำเร็จ", ToastAndroid.SHORT);
-
-    //  alert("บันทึกล้มเหลว: " + result.message);
-      
-    }
-  } catch (error) {
-    console.error("Submit Error:", error);
-    alert("เกิดข้อผิดพลาดขณะส่งข้อมูล");
-  }
-};
-
-  const [hasCameraPermission, setHasCameraPermission] = useState<
-    boolean | null
-  >(null);
-  const [hasLocationPermission, setHasLocationPermission] = useState<
-    boolean | null
-  >(null);
+  const [hasCameraPermission, setHasCameraPermission] = useState<boolean | null>(null);
+  const [hasLocationPermission, setHasLocationPermission] = useState<boolean | null>(null);
   const cameraRef = useRef<any>(null as any);
   const [photo, setPhoto] = useState<string | null>(null);
-  const [location, setLocation] = useState<{
-    latitude: number | null;
-    longitude: number | null;
-  }>({ latitude: null, longitude: null });
+  const [location, setLocation] = useState<{ latitude: number | null; longitude: number | null; }>({ latitude: null, longitude: null });
   const [currentTime, setCurrentTime] = useState<Date>(new Date());
   const [cameraType, setCameraType] = useState<"front" | "back">("front");
   const [locations, setLocations] = useState<any[]>([]);
@@ -100,6 +45,55 @@ ToastAndroid.show("บันทึกสำเร็จ", ToastAndroid.SHORT);
     distance: 0,
   });
   const router = useRouter();
+
+  const onRefresh = () => {
+    setRefreshing(true);
+    setTimeout(() => {
+      setRefreshing(false);
+    }, 2000);
+  };
+
+const submitCheckinStatus = async (status: number) => {
+  // ...ตรวจสอบเหมือนเดิม...
+
+  const formData = new FormData();
+  formData.append("personId", user.person_id.toString());
+  formData.append("status", status.toString());
+  formData.append("lat", location.latitude.toString());
+  formData.append("lng", location.longitude.toString());
+  formData.append("device", Platform.OS);
+  formData.append("unitId", locationStatus.unitId?.toString() ?? "");
+  formData.append("distance", locationStatus.distance.toString());
+  formData.append("radius", "60");
+  formData.append("remark", locationStatus.status !== 1 ? reason : "");
+
+  // Log ข้อมูลที่จะส่ง
+  for (let pair of formData.entries()) {
+    console.log(pair[0]+ ': ' + pair[1]);
+  }
+
+  try {
+    const response = await fetch("https://apisqas.wu.ac.th/tal/tal-timework/timestamp", {
+      method: "POST",
+      body: formData,
+    });
+
+    const result = await response.json();
+    console.log(result);
+    if (result.code === 200) {
+      ToastAndroid.show("บันทึกสำเร็จ", ToastAndroid.SHORT);
+      setPhoto(null);
+      setReason("");
+      setReasonError(false);
+      _callCurrentLocation();
+    } else {
+      alert("บันทึกล้มเหลว: " + JSON.stringify(result));
+    }
+  } catch (error) {
+    console.error("Submit Error:", error);
+    alert("เกิดข้อผิดพลาดขณะส่งข้อมูล");
+  }
+};
 
   useEffect(() => {
     const fetchLocations = async () => {
@@ -205,7 +199,7 @@ ToastAndroid.show("บันทึกสำเร็จ", ToastAndroid.SHORT);
         nearLocation = {
           status: status,
           message: locations[i].UNIT_NAME,
-          unitId: locations[i].UNIT_ID, // ⬅️ เพิ่มตรงนี้
+          unitId: locations[i].UNIT_ID,
           distance: distanceRadius,
         };
         if (status) break;
@@ -220,7 +214,7 @@ ToastAndroid.show("บันทึกสำเร็จ", ToastAndroid.SHORT);
             ? `อยู่ใน ${nearLocation.message}`
             : `อยู่ใกล้ ${nearLocation.message}`,
         distance: Math.max(nearLocation.distance, 0),
-        unitId: nearLocation.unitId, // ⬅️ เพิ่มตรงนี้
+        unitId: nearLocation.unitId,
       });
     } else {
       setLocationStatus({
@@ -387,51 +381,88 @@ ToastAndroid.show("บันทึกสำเร็จ", ToastAndroid.SHORT);
                   facing={cameraType}
                   ref={cameraRef}
                 >
-                  <View style={styles.buttonContainer}>
-                <TouchableOpacity
-  style={styles.captureButton}
-  onPress={() => {
-    takePicture();
-    submitCheckinStatus(locationStatus.status === 1 ? 2 : 92);
-  }}
->
-  <Text style={styles.buttonText}>
-    {locationStatus.status === 1 ? "เข้างาน" : "เข้างานนอกพื้นที่"}
-  </Text>
-</TouchableOpacity>
+                  {/* ปุ่มและเหตุผลในกล่องเดียวกัน */}
+                  <View style={styles.buttonBox}>
+                    {locationStatus.status !== 1 && (
+                      <View style={{ marginTop: 15, alignItems: "center" }}>
+                        <Text style={{ color: "red", fontWeight: "bold" }}>
+                          กรุณากรอกเหตุผลการเช็คอินนอกพื้นที่
+                        </Text>
+                        <TextInput
+                          style={{
+                            borderWidth: 3,
+                            borderColor: reasonError ? "red" : "#ccc",
+                            borderRadius: 8,
+                            padding: 15,
+                            width: 350,
+                            marginTop: 6,
+                            backgroundColor: "#fff",
+                          }}
+                          placeholder="ใส่เหตุผลที่นี่"
+                          value={reason}
+                          onChangeText={txt => {
+                            setReason(txt);
+                            setReasonError(false);
+                          }}
+                          multiline
+                        />
+                        {reasonError && (
+                          <Text style={{ color: "red", marginTop: 2 }}>
+                            กรุณาระบุเหตุผล
+                          </Text>
+                        )}
+                      </View>
+                    )}
+          <View style={styles.buttonRow}>
+  <TouchableOpacity
+    style={styles.captureButton}
+    onPress={() => {
+      if (locationStatus.status !== 1 && !reason.trim()) {
+        setReasonError(true);
+        return;
+      }
+      takePicture();
+      submitCheckinStatus(locationStatus.status === 1 ? 2 : 92);
+    }}
+    activeOpacity={0.8}
+  >
+    <View style={styles.iconTextRow}>
+      <Ionicons name="log-in-outline" size={22} color="#fff" style={{ marginRight: 8 }} />
+      <Text style={styles.buttonText}>
+        {"เข้างาน"}
+      </Text>
+    </View>
+  </TouchableOpacity>
 
-<TouchableOpacity
-  style={styles.captureButton}
-  onPress={() => {
-    takePicture();
-    submitCheckinStatus(locationStatus.status === 1 ? 3 : 93);
-  }}
->
-  <Text style={styles.buttonText}>
-    {locationStatus.status === 1 ? "ออกงาน" : "ออกงานนอกพื้นที่"}
-  </Text>
-</TouchableOpacity>
+  <TouchableOpacity
+    style={[styles.captureButton, { backgroundColor: "#C25D53" }]} // สีปุ่มออกงานต่างหน่อย
+    onPress={() => {
+      if (locationStatus.status !== 1 && !reason.trim()) {
+        setReasonError(true);
+        return;
+      }
+      takePicture();
+      submitCheckinStatus(locationStatus.status === 1 ? 3 : 93);
+    }}
+    activeOpacity={0.8}
+  >
+    <View style={styles.iconTextRow}>
+      <Ionicons name="log-out-outline" size={22} color="#fff" style={{ marginRight: 8 }} />
+      <Text style={styles.buttonText}>
+        {"ออกงาน"}
+      </Text>
+    </View>
+  </TouchableOpacity>
+</View>
 
 
+
+                    
                   </View>
                 </CameraView>
               ) : (
                 <View style={styles.camera}>
                   <Image source={{ uri: photo }} style={styles.image} />
-                  {/* <View style={styles.buttonContainer}>
-                    <TouchableOpacity
-                      style={styles.captureButton}
-                      onPress={() => setPhoto(null)}
-                    >
-                      <Text style={styles.buttonText}>ยืนยัน</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                      style={styles.captureButton}
-                      onPress={() => setPhoto(null)}
-                    >
-                      <Text style={styles.buttonText}>📸 ถ่ายใหม่</Text>
-                    </TouchableOpacity>
-                  </View> */}
                 </View>
               )}
             </View>
@@ -477,8 +508,8 @@ ToastAndroid.show("บันทึกสำเร็จ", ToastAndroid.SHORT);
                       }).addTo(map);
 
                       L.marker([${location.latitude}, ${
-                          location.longitude
-                        }]).addTo(map).openPopup();
+                        location.longitude
+                      }]).addTo(map).openPopup();
                       var locations = ${JSON.stringify(locations)};
                       locations.forEach(function(location) {
                         var circle = L.circle([parseFloat(location.LAT), parseFloat(location.LNG)], {
@@ -533,6 +564,42 @@ ToastAndroid.show("บันทึกสำเร็จ", ToastAndroid.SHORT);
 };
 
 const styles = StyleSheet.create({
+buttonRow: {
+  flexDirection: "row",
+  justifyContent: "center",
+  width: "100%",
+  marginBottom: 0,
+},
+captureButton: {
+  flexDirection: "row",
+  alignItems: "center",
+  backgroundColor: "#5A9C43", // สีเข้างาน
+  borderWidth: 0,
+  paddingVertical: 12,
+  paddingHorizontal: 18,
+  marginHorizontal: 10,
+  borderRadius: 30,
+  shadowColor: "#000",
+  shadowOpacity: 0.1,
+  shadowOffset: { width: 0, height: 2 },
+  shadowRadius: 4,
+  elevation: 2,
+  minWidth: 120,
+  justifyContent: "center",
+},
+iconTextRow: {
+  flexDirection: "row",
+  alignItems: "center",
+  justifyContent: "center",
+},
+buttonText: {
+  fontSize: 18,
+  fontWeight: "bold",
+  color: "#fff",
+  textAlign: "center",
+  paddingLeft: 0,
+},
+
   container: {
     flex: 1,
     backgroundColor: "#F5F5F5",
@@ -572,33 +639,14 @@ const styles = StyleSheet.create({
     height: "100%",
     position: "absolute",
   },
-  buttonContainer: {
+  buttonBox: {
     position: "absolute",
     bottom: 20,
     left: 0,
     right: 0,
-    flexDirection: "row",
-    justifyContent: "center",
+    alignItems: "center",
   },
-  captureButton: {
-    backgroundColor: "rgba(0, 0, 0, 0.5)",
-    borderWidth: 1,
-    borderColor: "#fff",
-    padding: 15,
-    marginHorizontal: 10,
-    borderRadius: 50,
-  },
-  switchButton: {
-    backgroundColor: "#FFD700",
-    padding: 10,
-    marginHorizontal: 10,
-    borderRadius: 5,
-  },
-  buttonText: {
-    fontSize: 24,
-    fontWeight: "bold",
-    color: "#fff",
-  },
+
   imageContainer: {
     alignItems: "center",
   },
@@ -629,7 +677,6 @@ const styles = StyleSheet.create({
   mapButton: {
     width: 50,
     height: 50,
-    // marginTop: 10,
     backgroundColor: "rgba(0, 0, 0, 0.5)",
     borderRadius: 50,
     alignItems: "center",
