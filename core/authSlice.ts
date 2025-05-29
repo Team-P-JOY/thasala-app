@@ -46,7 +46,7 @@ const INITIAL_MENU = [
     key: 6,
     label: "ติดต่อเรา",
     icon: "chatbubbles-outline",
-    route: "/home",
+    route: "/information/contactus",
     show: true,
   },
   {

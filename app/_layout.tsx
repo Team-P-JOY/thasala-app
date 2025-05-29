@@ -78,6 +78,7 @@ function AppContent() {
           <Stack.Screen name="tal" options={{ headerShown: false }} />
 
           <Stack.Screen name="announce" options={{ headerShown: false }} />
+          <Stack.Screen name="information" options={{ headerShown: false }} />
           <Stack.Screen name="+not-found" options={{ headerShown: false }} />
         </Stack>
         <StatusBar style="auto" />
