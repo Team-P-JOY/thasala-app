@@ -31,6 +31,8 @@ const CheckInScreen = () => {
   const { user } = useSelector((state: RootState) => state.auth);
   const [reason, setReason] = useState("");
   const [reasonError, setReasonError] = useState(false);
+  const [checkinLogs, setCheckinLogs] = useState<any[]>([]);
+  const [loadingCheckins, setLoadingCheckins] = useState<boolean>(false);
 
   const [hasCameraPermission, setHasCameraPermission] = useState<
     boolean | null
@@ -85,11 +87,6 @@ const CheckInScreen = () => {
     formData.append("distance", locationStatus.distance.toString());
     formData.append("radius", "60");
     formData.append("remark", locationStatus.status !== 1 ? reason : "");
-
-    // Log ข้อมูลที่จะส่ง
-    for (let pair of formData.entries()) {
-      console.log(pair[0] + ": " + pair[1]);
-    }
 
     try {
       const response = await fetch(
@@ -342,6 +339,71 @@ const CheckInScreen = () => {
       >
         <View style={styles.container}>
           <View style={styles.header}>
+            {/* ใส่ไว้หลัง status GPS */}
+            <View style={{ marginTop: 10, paddingHorizontal: 8 }}>
+              <Text style={{ fontWeight: "bold", color: "#333" }}>
+                ประวัติเช็คอินวันนี้
+              </Text>
+              {loadingCheckins ? (
+                <ActivityIndicator
+                  color="orange"
+                  size="small"
+                  style={{ marginTop: 10 }}
+                />
+              ) : checkinLogs.length === 0 ? (
+                <Text style={{ color: "#888", marginTop: 6 }}>
+                  ยังไม่มีข้อมูลเช็คอินวันนี้
+                </Text>
+              ) : (
+                <View
+                  style={{
+                    marginTop: 8,
+                    backgroundColor: "#f9f9f9",
+                    borderRadius: 6,
+                    padding: 8,
+                  }}
+                >
+                  {checkinLogs.map((row, idx) => (
+                    <View
+                      key={idx}
+                      style={{
+                        flexDirection: "row",
+                        alignItems: "center",
+                        marginBottom: 4,
+                      }}
+                    >
+                      <Ionicons
+                        name={
+                          row.checktype === "1"
+                            ? "log-in-outline"
+                            : "log-out-outline"
+                        }
+                        size={20}
+                        color={row.checktype === "1" ? "#5A9C43" : "#C25D53"}
+                        style={{ marginRight: 8 }}
+                      />
+                      <Text style={{ width: 80 }}>{row.timeCheckin}</Text>
+                      <Text style={{ color: "#333" }}>{row.statusName}</Text>
+                      {row.gps === "1" && (
+                        <Ionicons
+                          name="location-outline"
+                          size={15}
+                          color="blue"
+                          style={{ marginLeft: 8 }}
+                        />
+                      )}
+                      {row.unitNameFin && (
+                        <Text style={{ marginLeft: 8 }}>{row.unitNameFin}</Text>
+                      )}
+                      {row.unitNameGps && (
+                        <Text style={{ marginLeft: 8 }}>{row.unitNameGps}</Text>
+                      )}
+                    </View>
+                  ))}
+                </View>
+              )}
+            </View>
+
             <Text style={styles.headerText}>
               {currentTime.toLocaleDateString("th-TH", {
                 day: "2-digit",
@@ -381,7 +443,6 @@ const CheckInScreen = () => {
                 {locationStatus.message}
               </Text>
             </View>
-
             {locationStatus.distance !== 0 ? (
               <Text
                 style={[
@@ -412,6 +473,7 @@ const CheckInScreen = () => {
               </Text>
             )}
           </View>
+
           <View style={styles.content}>
             <View style={{ flex: 2 }}>
               {!photo ? (

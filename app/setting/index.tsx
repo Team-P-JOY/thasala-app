@@ -6,9 +6,11 @@ import CustomTopBar from "@/components/CustomTopBar";
 import ImageViewer from "@/components/ImageViewer";
 import Modal from "@/components/Modal";
 import { logout } from "@/core/authSlice";
+import { registerForPushNotifications } from "@/core/notifications";
 import { RootState } from "@/core/store";
 import { theme } from "@/core/theme";
 import { Ionicons } from "@expo/vector-icons";
+import * as Device from "expo-device";
 import { useRouter } from "expo-router";
 import React, { useState } from "react";
 import {
@@ -124,6 +126,31 @@ const index = () => {
               }}
               accept={async () => {
                 // await signOut();
+                //ลบการลงทะเบียนใช้งาน Thasala Application
+                const expoToken = await registerForPushNotifications();
+                const osname = await Device.osName;
+                //console.log("Expo Push Token:", expoToken);
+                const formData = new FormData();
+                formData.append("personId", user?.person_id);
+                formData.append("expoToken", expoToken ?? "");
+                formData.append("osname", osname ?? "");
+              
+                try {
+                  const response = await fetch("http://10.250.2.9/apis/mbl/mbl-register/deleteRegister", {
+                    method: "POST",
+                    body: formData,
+                  });
+              
+                  const result = await response.json();
+                  if (result.code === 200) {
+                    //console.error("Success:");
+                  } 
+                } 
+                catch (error) {
+                  // console.error("Submit Error:", error);
+                  // alert("เกิดข้อผิดพลาดขณะส่งข้อมูล");
+                }
+
                 dispatch(logout());
                 setModalVisible(false);
                 router.replace("/");
