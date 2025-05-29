@@ -29,6 +29,8 @@ const CheckInScreen = () => {
   const { user } = useSelector((state: RootState) => state.auth);
   const [reason, setReason] = useState("");
   const [reasonError, setReasonError] = useState(false);
+const [checkinLogs, setCheckinLogs] = useState<any[]>([]);
+const [loadingCheckins, setLoadingCheckins] = useState<boolean>(false);
 
   const [hasCameraPermission, setHasCameraPermission] = useState<boolean | null>(null);
   const [hasLocationPermission, setHasLocationPermission] = useState<boolean | null>(null);
@@ -92,6 +94,19 @@ formData.append("lng", location.longitude.toString().substring(0, 10));
     alert("เกิดข้อผิดพลาดขณะส่งข้อมูล");
   }
 };
+useEffect(() => {
+  // เปลี่ยน personId และ date ตาม user ที่ล็อกอินและวันที่ปัจจุบัน
+  const personId = user?.person_id || "5800000005";
+  const dateStr = currentTime.toISOString().split('T')[0]; // เช่น 2025-05-28
+  setLoadingCheckins(true);
+  fetch(`https://apisqas.wu.ac.th/tal/tal-timework/get-timestamp-daily?personId=${personId}&date=${dateStr}`)
+    .then(res => res.json())
+    .then(json => {
+      setCheckinLogs(json.dtTimestamp || []);
+    })
+    .catch(() => setCheckinLogs([]))
+    .finally(() => setLoadingCheckins(false));
+}, [user]);
 
   useEffect(() => {
     const fetchLocations = async () => {
@@ -309,6 +324,36 @@ formData.append("lng", location.longitude.toString().substring(0, 10));
       >
         <View style={styles.container}>
           <View style={styles.header}>
+            {/* ใส่ไว้หลัง status GPS */}
+<View style={{marginTop: 10, paddingHorizontal: 8}}>
+  <Text style={{fontWeight: "bold", color: "#333"}}>ประวัติเช็คอินวันนี้</Text>
+  {loadingCheckins ? (
+    <ActivityIndicator color="orange" size="small" style={{marginTop: 10}} />
+  ) : checkinLogs.length === 0 ? (
+    <Text style={{color: "#888", marginTop: 6}}>ยังไม่มีข้อมูลเช็คอินวันนี้</Text>
+  ) : (
+    <View style={{marginTop: 8, backgroundColor: "#f9f9f9", borderRadius: 6, padding: 8}}>
+      {checkinLogs.map((row, idx) => (
+        <View key={idx} style={{flexDirection: "row", alignItems: "center", marginBottom: 4}}>
+          <Ionicons
+            name={row.checktype === "1" ? "log-in-outline" : "log-out-outline"}
+            size={20}
+            color={row.checktype === "1" ? "#5A9C43" : "#C25D53"}
+            style={{marginRight: 8}}
+          />
+          <Text style={{width: 80}}>{row.timeCheckin}</Text>
+          <Text style={{color: "#333"}}>{row.statusName}</Text>
+          {row.gps === "1" && (
+            <Ionicons name="location-outline" size={15} color="blue" style={{marginLeft: 8}} />
+          )}
+          {row.unitNameFin && <Text style={{marginLeft: 8}}>{row.unitNameFin}</Text>}
+          {row.unitNameGps && <Text style={{marginLeft: 8}}>{row.unitNameGps}</Text>}
+        </View>
+      ))}
+    </View>
+  )}
+</View>
+
             <Text style={styles.headerText}>
               {currentTime.toLocaleDateString("th-TH", {
                 day: "2-digit",
@@ -348,7 +393,6 @@ formData.append("lng", location.longitude.toString().substring(0, 10));
                 {locationStatus.message}
               </Text>
             </View>
-
             {locationStatus.distance !== 0 ? (
               <Text
                 style={[
@@ -369,6 +413,7 @@ formData.append("lng", location.longitude.toString().substring(0, 10));
       ? ` ${locationStatus.distance.toFixed(2)} ม.`
       : ` ${(locationStatus.distance / 1000).toFixed(2)} กม.`}
   )              </Text>
+  
             ) : (
               ""
             )}
@@ -379,7 +424,9 @@ formData.append("lng", location.longitude.toString().substring(0, 10));
               </Text>
             )}
           </View>
+          
           <View style={styles.content}>
+            
             <View style={{ flex: 2 }}>
               {!photo ? (
                 <CameraView
