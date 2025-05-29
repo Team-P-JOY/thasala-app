@@ -71,7 +71,7 @@ const pinSetting = () => {
             resizeMode="contain"
           />
         </View>
-        <Appbar.Action icon="qrcode" color={theme.colors.primary} size={30} />
+        {/* <Appbar.Action icon="qrcode" color={theme.colors.primary} size={30} /> */}
         <View>
           <Avatar.Image
             size={45}
