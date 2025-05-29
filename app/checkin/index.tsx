@@ -1,6 +1,6 @@
 import CustomBackground from "@/components/CustomBackground";
+import CustomText from "@/components/CustomText";
 import CustomTopBar from "@/components/CustomTopBar";
-import Modal from "@/components/Modal";
 import { RootState } from "@/core/store";
 import { theme } from "@/core/theme";
 import { Ionicons } from "@expo/vector-icons";
@@ -11,12 +11,9 @@ import { useRouter } from "expo-router";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
-  Image,
   Platform,
-  RefreshControl,
   ScrollView,
   StyleSheet,
-  Text,
   TextInput,
   ToastAndroid,
   TouchableOpacity,
@@ -26,7 +23,6 @@ import { WebView } from "react-native-webview";
 import { useSelector } from "react-redux";
 
 const CheckInScreen = () => {
-  const [modalVisible, setModalVisible] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const { user } = useSelector((state: RootState) => state.auth);
   const [reason, setReason] = useState("");
@@ -70,18 +66,8 @@ const CheckInScreen = () => {
     const formData = new FormData();
     formData.append("personId", user.person_id.toString());
     formData.append("status", status.toString());
-    formData.append(
-      "lat",
-      location.latitude !== null
-        ? location.latitude.toString().substring(0, 10)
-        : ""
-    );
-    formData.append(
-      "lng",
-      location.longitude !== null
-        ? location.longitude.toString().substring(0, 10)
-        : ""
-    );
+    formData.append("lat", location.latitude.toString().substring(0, 10));
+    formData.append("lng", location.longitude.toString().substring(0, 10));
     formData.append("device", Platform.OS);
     formData.append("unitId", locationStatus.unitId?.toString() ?? "1");
     formData.append("distance", locationStatus.distance.toString());
@@ -99,12 +85,14 @@ const CheckInScreen = () => {
 
       const result = await response.json();
       console.log(result);
+      setPhoto(null);
       if (result.code === 200) {
         ToastAndroid.show("บันทึกสำเร็จ", ToastAndroid.SHORT);
-        setModalVisible(true);
       } else {
         alert("บันทึกล้มเหลว: " + JSON.stringify(result));
       }
+
+      _callHistory();
     } catch (error) {
       console.error("Submit Error:", error);
       alert("เกิดข้อผิดพลาดขณะส่งข้อมูล");
@@ -112,16 +100,25 @@ const CheckInScreen = () => {
   };
 
   async function _callHistory() {
-    try {
-      const response = await fetch("https://e-jpas.wu.ac.th/checkin/point.js");
-      const json = await response.json();
-      console.log("Fetched history:", json);
-    } catch (error) {
-      console.error("Error fetching history:", error);
-    } finally {
-      // setLoadingLocations(false);
-    }
+    const personId = user?.person_id;
+    const dateStr = currentTime.toISOString().split("T")[0];
+    setLoadingCheckins(true);
+    fetch(
+      `https://apisqas.wu.ac.th/tal/tal-timework/get-timestamp-daily?personId=${personId}&date=${dateStr}`
+    )
+      .then((res) => res.json())
+      .then((json) => {
+        setCheckinLogs(json.dtTimestamp || []);
+      })
+      .catch(() => setCheckinLogs([]))
+      .finally(() => setLoadingCheckins(false));
   }
+
+  useEffect(() => {
+    if (user) {
+      _callHistory();
+    }
+  }, [user]);
 
   useEffect(() => {
     const fetchLocations = async () => {
@@ -276,7 +273,7 @@ const CheckInScreen = () => {
           back={() => router.push("/home")}
         />
         <View style={styles.permissionContainer}>
-          <Text>กำลังขอสิทธิ์...</Text>
+          <CustomText>กำลังขอสิทธิ์...</CustomText>
         </View>
       </CustomBackground>
     );
@@ -291,7 +288,7 @@ const CheckInScreen = () => {
         />
         <View style={styles.permissionContainer}>
           <ActivityIndicator size="large" color="orange" />
-          <Text>กำลังโหลดข้อมูลสถานที่...</Text>
+          <CustomText>กำลังโหลดข้อมูลสถานที่...</CustomText>
         </View>
       </CustomBackground>
     );
@@ -305,7 +302,7 @@ const CheckInScreen = () => {
           back={() => router.push("/home")}
         />
         <View style={styles.permissionContainer}>
-          <Text>❌ ไม่ได้รับสิทธิ์ใช้กล้อง</Text>
+          <CustomText>❌ ไม่ได้รับสิทธิ์ใช้กล้อง</CustomText>
         </View>
       </CustomBackground>
     );
@@ -319,7 +316,7 @@ const CheckInScreen = () => {
           back={() => router.push("/home")}
         />
         <View style={styles.permissionContainer}>
-          <Text>❌ ไม่ได้รับสิทธิ์ใช้ GPS</Text>
+          <CustomText>❌ ไม่ได้รับสิทธิ์ใช้ GPS</CustomText>
         </View>
       </CustomBackground>
     );
@@ -331,261 +328,218 @@ const CheckInScreen = () => {
         title="บันทึกเวลาเข้างาน"
         back={() => router.push("/home")}
       />
-      <ScrollView
-        contentContainerStyle={{ flexGrow: 1 }}
-        refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-        }
-      >
-        <View style={styles.container}>
-          <View style={styles.header}>
-            {/* ใส่ไว้หลัง status GPS */}
-            <View style={{ marginTop: 10, paddingHorizontal: 8 }}>
-              <Text style={{ fontWeight: "bold", color: "#333" }}>
-                ประวัติเช็คอินวันนี้
-              </Text>
-              {loadingCheckins ? (
-                <ActivityIndicator
-                  color="orange"
-                  size="small"
-                  style={{ marginTop: 10 }}
-                />
-              ) : checkinLogs.length === 0 ? (
-                <Text style={{ color: "#888", marginTop: 6 }}>
-                  ยังไม่มีข้อมูลเช็คอินวันนี้
-                </Text>
+
+      <View style={styles.container}>
+        <View style={styles.header}>
+          <View style={{ flex: 1 }}>
+            <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
+              <CustomText style={styles.headerText}>
+                วันที่{" "}
+                {(() => {
+                  const date = currentTime;
+                  const buddhistYear = date.getFullYear() + 543;
+                  const month = date.toLocaleString("th-TH", {
+                    month: "short",
+                  });
+                  const day = date.toLocaleString("th-TH", { day: "2-digit" });
+                  return `${day} ${month} ${buddhistYear}`;
+                })()}
+              </CustomText>
+              <CustomText bold style={styles.headerText}>
+                เวลา {currentTime.toLocaleTimeString("th-TH")}
+              </CustomText>
+
+              <View
+                style={{
+                  flexDirection: "row",
+                  alignItems: "center",
+                  gap: 5,
+                  paddingTop: 5,
+                }}
+              >
+                {locationStatus.status === 2 && (
+                  <ActivityIndicator animating={true} color="blue" />
+                )}
+
+                <CustomText
+                  style={[
+                    styles.headerStatus,
+                    {
+                      color:
+                        locationStatus.status === 1
+                          ? "#245373"
+                          : locationStatus.status === 2
+                          ? "#dc6803"
+                          : "#dc6803",
+                    },
+                  ]}
+                >
+                  {locationStatus.message}
+                </CustomText>
+              </View>
+              {locationStatus.distance !== 0 ? (
+                <CustomText
+                  style={[
+                    styles.headerStatusDis,
+                    {
+                      color:
+                        locationStatus.status === 1
+                          ? "#245373"
+                          : locationStatus.status === 2
+                          ? "#dc6803"
+                          : "#dc6803",
+                    },
+                  ]}
+                >
+                  ( ระยะห่าง
+                  {locationStatus.distance < 1000
+                    ? ` ${locationStatus.distance.toFixed(2)} ม.`
+                    : ` ${(locationStatus.distance / 1000).toFixed(2)} กม.`}
+                  ){" "}
+                </CustomText>
               ) : (
-                <View
+                ""
+              )}
+
+              {locationStatus.status !== 2 && (
+                <CustomText style={[styles.headerStatus2]}>
+                  {location.latitude}, {location.longitude}{" "}
+                </CustomText>
+              )}
+
+              <View style={{ marginTop: 10, flex: 1 }}>
+                <CustomText
                   style={{
-                    marginTop: 8,
-                    backgroundColor: "#f9f9f9",
-                    borderRadius: 6,
-                    padding: 8,
+                    color: theme.colors.primary,
+                    fontSize: 12,
                   }}
                 >
-                  {checkinLogs.map((row, idx) => (
+                  ประวัติการเช็คอินวันนี้
+                </CustomText>
+                {loadingCheckins ? (
+                  <ActivityIndicator
+                    color="orange"
+                    size="small"
+                    style={{ marginTop: 10 }}
+                  />
+                ) : checkinLogs.length === 0 ? (
+                  <CustomText style={{ color: "gray", marginTop: 6 }}>
+                    ยังไม่มีข้อมูลเช็คอินวันนี้
+                  </CustomText>
+                ) : (
+                  <View
+                    style={{
+                      flex: 1,
+                      marginTop: 10,
+                      paddingBottom: 10,
+                      zIndex: 1,
+                    }}
+                  >
                     <View
-                      key={idx}
                       style={{
-                        flexDirection: "row",
-                        alignItems: "center",
-                        marginBottom: 4,
+                        gap: 5,
                       }}
                     >
-                      <Ionicons
-                        name={
-                          row.checktype === "1"
-                            ? "log-in-outline"
-                            : "log-out-outline"
-                        }
-                        size={20}
-                        color={row.checktype === "1" ? "#5A9C43" : "#C25D53"}
-                        style={{ marginRight: 8 }}
-                      />
-                      <Text style={{ width: 80 }}>{row.timeCheckin}</Text>
-                      <Text style={{ color: "#333" }}>{row.statusName}</Text>
-                      {row.gps === "1" && (
-                        <Ionicons
-                          name="location-outline"
-                          size={15}
-                          color="blue"
-                          style={{ marginLeft: 8 }}
-                        />
-                      )}
-                      {row.unitNameFin && (
-                        <Text style={{ marginLeft: 8 }}>{row.unitNameFin}</Text>
-                      )}
-                      {row.unitNameGps && (
-                        <Text style={{ marginLeft: 8 }}>{row.unitNameGps}</Text>
-                      )}
-                    </View>
-                  ))}
-                </View>
-              )}
-            </View>
-
-            <Text style={styles.headerText}>
-              {currentTime.toLocaleDateString("th-TH", {
-                day: "2-digit",
-                month: "long",
-                year: "numeric",
-              })}
-            </Text>
-            <Text style={styles.headerText}>
-              เวลา {currentTime.toLocaleTimeString("th-TH")}
-            </Text>
-
-            <View
-              style={{
-                flexDirection: "row",
-                alignItems: "center",
-                gap: 5,
-                paddingTop: 15,
-              }}
-            >
-              {locationStatus.status === 2 && (
-                <ActivityIndicator animating={true} color="blue" />
-              )}
-
-              <Text
-                style={[
-                  styles.headerStatus,
-                  {
-                    color:
-                      locationStatus.status === 1
-                        ? "green"
-                        : locationStatus.status === 2
-                        ? "blue"
-                        : "red",
-                  },
-                ]}
-              >
-                {locationStatus.message}
-              </Text>
-            </View>
-            {locationStatus.distance !== 0 ? (
-              <Text
-                style={[
-                  styles.headerStatusDis,
-                  {
-                    color:
-                      locationStatus.status === 1
-                        ? "green"
-                        : locationStatus.status === 2
-                        ? "blue"
-                        : "red",
-                  },
-                ]}
-              >
-                ( ระยะห่าง
-                {locationStatus.distance < 1000
-                  ? ` ${locationStatus.distance.toFixed(2)} ม.`
-                  : ` ${(locationStatus.distance / 1000).toFixed(2)} กม.`}
-                ){" "}
-              </Text>
-            ) : (
-              ""
-            )}
-
-            {locationStatus.status !== 2 && (
-              <Text style={[styles.headerStatus2]}>
-                {location.latitude}, {location.longitude}{" "}
-              </Text>
-            )}
-          </View>
-
-          <View style={styles.content}>
-            <View style={{ flex: 2 }}>
-              {!photo ? (
-                <CameraView
-                  style={styles.camera}
-                  facing={cameraType}
-                  ref={cameraRef}
-                >
-                  {/* ปุ่มและเหตุผลในกล่องเดียวกัน */}
-                  <View style={styles.buttonBox}>
-                    {locationStatus.status !== 1 && (
-                      <View style={{ marginTop: 15, alignItems: "center" }}>
-                        <Text style={{ color: "red", fontWeight: "bold" }}>
-                          กรุณากรอกเหตุผลการเช็คอินนอกพื้นที่
-                        </Text>
-                        <TextInput
+                      {checkinLogs.map((row, idx) => (
+                        <View
+                          key={idx}
                           style={{
-                            borderWidth: 3,
-                            borderColor: reasonError ? "red" : "#ccc",
+                            backgroundColor:
+                              row.checktype === "1"
+                                ? "rgba(208,237,218,0.5)"
+                                : "rgba(240,216,214,0.5)",
                             borderRadius: 8,
-                            padding: 15,
-                            width: 350,
-                            marginTop: 6,
-                            backgroundColor: "#fff",
+                            flexDirection: "row",
+                            alignItems: "center",
+                            paddingVertical: 5,
                           }}
-                          placeholder="ใส่เหตุผลที่นี่"
-                          value={reason}
-                          onChangeText={(txt) => {
-                            setReason(txt);
-                            setReasonError(false);
-                          }}
-                          multiline
-                        />
-                        {reasonError && (
-                          <Text style={{ color: "red", marginTop: 2 }}>
-                            กรุณาระบุเหตุผล
-                          </Text>
-                        )}
-                      </View>
-                    )}
-                    <View style={styles.buttonRow}>
-                      <TouchableOpacity
-                        style={styles.captureButton}
-                        onPress={() => {
-                          if (locationStatus.status !== 1 && !reason.trim()) {
-                            setReasonError(true);
-                            return;
-                          }
-                          takePicture();
-                          submitCheckinStatus(
-                            locationStatus.status === 1 ? 2 : 92
-                          );
-                        }}
-                        activeOpacity={0.8}
-                      >
-                        <View style={styles.iconTextRow}>
-                          <Ionicons
-                            name="log-in-outline"
-                            size={22}
-                            color="#fff"
-                            style={{ marginRight: 8 }}
-                          />
-                          <Text style={styles.buttonText}>{"เข้างาน"}</Text>
-                        </View>
-                      </TouchableOpacity>
+                        >
+                          <CustomText
+                            bold
+                            style={{
+                              color:
+                                row.checktype === "1" ? "#079455" : "#d92d20",
+                              paddingHorizontal: 10,
+                            }}
+                          >
+                            {row.statusName}
+                          </CustomText>
 
-                      <TouchableOpacity
-                        style={[
-                          styles.captureButton,
-                          { backgroundColor: "#C25D53" },
-                        ]} // สีปุ่มออกงานต่างหน่อย
-                        onPress={() => {
-                          if (locationStatus.status !== 1 && !reason.trim()) {
-                            setReasonError(true);
-                            return;
-                          }
-                          takePicture();
-                          submitCheckinStatus(
-                            locationStatus.status === 1 ? 3 : 93
-                          );
-                        }}
-                        activeOpacity={0.8}
-                      >
-                        <View style={styles.iconTextRow}>
-                          <Ionicons
-                            name="log-out-outline"
-                            size={22}
-                            color="#fff"
-                            style={{ marginRight: 8 }}
-                          />
-                          <Text style={styles.buttonText}>{"ออกงาน"}</Text>
+                          <View>
+                            <CustomText
+                              bold
+                              style={{
+                                color: theme.colors.primary,
+                                fontSize: 12,
+                              }}
+                            >
+                              เวลา {row.timeCheckin}
+                            </CustomText>
+
+                            <View
+                              style={{
+                                flexDirection: "row",
+                                alignItems: "center",
+                              }}
+                            >
+                              {row.gps === "1" && (
+                                <Ionicons
+                                  name="location-outline"
+                                  size={10}
+                                  color={theme.colors.primary}
+                                  style={{ marginRight: 2 }}
+                                />
+                              )}
+                              {row.unitNameFin && (
+                                <CustomText
+                                  style={{
+                                    fontSize: 10,
+                                    color: theme.colors.primary,
+                                  }}
+                                >
+                                  {row.unitNameFin}
+                                </CustomText>
+                              )}
+                              {row.unitNameGps && (
+                                <CustomText
+                                  style={{
+                                    fontSize: 10,
+                                    color: theme.colors.primary,
+                                  }}
+                                >
+                                  {row.unitNameGps}
+                                </CustomText>
+                              )}
+                            </View>
+                          </View>
                         </View>
-                      </TouchableOpacity>
+                      ))}
                     </View>
                   </View>
-                </CameraView>
-              ) : (
-                <View style={styles.camera}>
-                  <Image source={{ uri: photo }} style={styles.image} />
-                </View>
-              )}
-            </View>
-            <View style={styles.mapContainer}>
-              <View style={[styles.map, { borderColor: theme.colors.primary }]}>
-                {location && locations.length > 0 && locationStatus !== 2 ? (
-                  <>
-                    <WebView
-                      originWhitelist={["*"]}
-                      javaScriptEnabled={true}
-                      domStorageEnabled={true}
-                      source={{
-                        html: `
+                )}
+              </View>
+            </ScrollView>
+          </View>
+        </View>
+
+        <View style={styles.content}>
+          <View style={{ flex: 2 }}>
+            <CameraView
+              style={styles.camera}
+              facing={cameraType}
+              ref={cameraRef}
+            ></CameraView>
+          </View>
+          <View style={styles.mapContainer}>
+            <View style={[styles.map, { borderColor: theme.colors.primary }]}>
+              {location && locations.length > 0 && locationStatus !== 2 ? (
+                <>
+                  <WebView
+                    originWhitelist={["*"]}
+                    javaScriptEnabled={true}
+                    domStorageEnabled={true}
+                    source={{
+                      html: `
                 <!DOCTYPE html>
                 <html>
                 <head>
@@ -618,8 +572,8 @@ const CheckInScreen = () => {
                       }).addTo(map);
 
                       L.marker([${location.latitude}, ${
-                          location.longitude
-                        }]).addTo(map).openPopup();
+                        location.longitude
+                      }]).addTo(map).openPopup();
                       var locations = ${JSON.stringify(locations)};
                       locations.forEach(function(location) {
                         var circle = L.circle([parseFloat(location.LAT), parseFloat(location.LNG)], {
@@ -636,56 +590,121 @@ const CheckInScreen = () => {
                   </script>
                 </body>
                 </html>`,
-                      }}
-                    />
-                  </>
-                ) : (
-                  <Text>กำลังดึงตำแหน่ง GPS...</Text>
-                )}
-              </View>
-              {!photo ? (
-                <View style={styles.buttonsRow}>
-                  <TouchableOpacity
-                    style={styles.mapButton}
-                    onPress={_callCurrentLocation}
-                  >
-                    <Ionicons name="location-outline" size={28} color="white" />
-                  </TouchableOpacity>
-                  <TouchableOpacity
-                    style={styles.mapButton}
-                    onPress={switchCamera}
-                  >
-                    <Ionicons
-                      name="camera-reverse-outline"
-                      size={28}
-                      color="white"
-                    />
-                  </TouchableOpacity>
-                </View>
+                    }}
+                  />
+                </>
               ) : (
-                ""
+                <CustomText>กำลังดึงตำแหน่ง GPS...</CustomText>
               )}
+            </View>
+
+            <View style={styles.buttonsRow}>
+              <TouchableOpacity
+                style={styles.mapButton}
+                onPress={_callCurrentLocation}
+              >
+                <Ionicons name="location-outline" size={28} color="white" />
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.mapButton} onPress={switchCamera}>
+                <Ionicons
+                  name="camera-reverse-outline"
+                  size={28}
+                  color="white"
+                />
+              </TouchableOpacity>
             </View>
           </View>
         </View>
+      </View>
+      <View style={styles.buttonBox}>
+        {locationStatus.status !== 1 && (
+          <View style={{ marginVertical: 15, alignItems: "center" }}>
+            <CustomText style={{ color: "red" }}>
+              กรุณากรอกเหตุผลการเช็คอินนอกพื้นที่
+            </CustomText>
+            <TextInput
+              style={{
+                borderWidth: 1,
+                borderColor: reasonError ? "red" : theme.colors.primary,
+                borderRadius: 8,
+                padding: 15,
+                width: 350,
+                marginTop: 6,
+                backgroundColor: "#fff",
+              }}
+              placeholder="ใส่เหตุผลที่นี่"
+              value={reason}
+              onChangeText={(txt) => {
+                setReason(txt);
+                setReasonError(false);
+              }}
+              multiline
+            />
+            {reasonError && (
+              <CustomText style={{ color: "red", marginTop: 2, fontSize: 12 }}>
+                กรุณาระบุเหตุผล
+              </CustomText>
+            )}
+          </View>
+        )}
+        <View style={styles.buttonRow}>
+          <TouchableOpacity
+            style={[
+              styles.captureButton,
+              { backgroundColor: "#dcfae6", zIndex: 99 },
+            ]}
+            onPress={() => {
+              if (locationStatus.status !== 1 && !reason.trim()) {
+                setReasonError(true);
+                return;
+              }
+              takePicture();
+              submitCheckinStatus(locationStatus.status === 1 ? 2 : 92);
+            }}
+            activeOpacity={0.8}
+          >
+            <View style={styles.iconTextRow}>
+              <Ionicons
+                name="log-in-outline"
+                size={22}
+                color="#079455"
+                style={{ marginRight: 8 }}
+              />
+              <CustomText bold style={{ color: "#079455", fontSize: 16 }}>
+                เข้างาน
+              </CustomText>
+            </View>
+          </TouchableOpacity>
 
-        <Modal
-          visible={modalVisible}
-          title={"ออกจากระบบ"}
-          description={"คุณต้องการออกจากระบบหรือไม่?"}
-          hideModal={() => {
-            setModalVisible(false);
-          }}
-          accept={async () => {
-            // await signOut();
-            // dispatch(logout());
-            // setModalVisible(false);
-            // router.replace("/");
-          }}
-          acceptText={"ตกลง"}
-          cancelText={"ยกเลิก"}
-        />
-      </ScrollView>
+          <TouchableOpacity
+            style={[
+              styles.captureButton,
+              { backgroundColor: "#fee4e2", zIndex: 99 },
+            ]}
+            onPress={() => {
+              if (locationStatus.status !== 1 && !reason.trim()) {
+                setReasonError(true);
+                return;
+              }
+              takePicture();
+              submitCheckinStatus(locationStatus.status === 1 ? 3 : 93);
+            }}
+            activeOpacity={0.8}
+          >
+            <View style={styles.iconTextRow}>
+              <Ionicons
+                name="log-out-outline"
+                size={22}
+                color="#d92d20"
+                style={{ marginRight: 8 }}
+              />
+              <CustomText bold style={{ color: "#d92d20", fontSize: 16 }}>
+                ออกงาน
+              </CustomText>
+            </View>
+          </TouchableOpacity>
+        </View>
+      </View>
     </CustomBackground>
   );
 };
@@ -696,6 +715,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     width: "100%",
     marginBottom: 0,
+    zIndex: 99,
   },
   captureButton: {
     flexDirection: "row",
@@ -718,13 +738,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-  },
-  buttonText: {
-    fontSize: 18,
-    fontWeight: "bold",
-    color: "#fff",
-    textAlign: "center",
-    paddingLeft: 0,
+    zIndex: 99,
   },
 
   container: {
@@ -735,31 +749,33 @@ const styles = StyleSheet.create({
     position: "absolute",
     top: 10,
     left: 10,
+    right: 10,
+    bottom: 10,
     width: "100%",
-    zIndex: 10,
+    zIndex: 1,
+    paddingRight: 180,
+    flex: 1,
+    height: "100%",
   },
   headerText: {
     fontSize: 18,
-    fontWeight: "bold",
     color: theme.colors.primary,
   },
   headerStatus: {
     fontSize: 15,
-    fontWeight: "bold",
   },
   headerStatusDis: {
     fontSize: 15,
-    fontWeight: "bold",
   },
   headerStatus2: {
     fontSize: 10,
-    fontWeight: "bold",
     color: "gray",
     paddingTop: 2,
   },
   content: {
     flex: 1,
     position: "relative",
+    zIndex: 0,
   },
   camera: {
     width: "100%",
@@ -772,6 +788,8 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     alignItems: "center",
+    justifyContent: "center",
+    zIndex: 10,
   },
 
   imageContainer: {
@@ -800,6 +818,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "flex-end",
     marginTop: 10,
+    zIndex: 10,
   },
   mapButton: {
     width: 50,
