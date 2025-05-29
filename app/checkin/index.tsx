@@ -106,7 +106,7 @@ const CheckInScreen = () => {
     const dateStr = currentTime.toISOString().split("T")[0];
     setLoadingCheckins(true);
     fetch(
-      `https://apisqas.wu.ac.th/tal/tal-timework/get-timestamp-daily?personId=${personId}&date=${dateStr}`
+      `https://apisqas.wu.ac.th/tal/tal-timework/get-timestamp-today?personId=${personId}&date=${dateStr}`
     )
       .then((res) => res.json())
       .then((json) => {
