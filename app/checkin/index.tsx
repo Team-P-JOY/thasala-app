@@ -450,7 +450,7 @@ const CheckInScreen = () => {
                       >
                         <View
                           style={{
-                            gap: 5,
+                            gap: 2,
                           }}
                         >
                           {checkinLogs.map((row, idx) => (
@@ -464,7 +464,7 @@ const CheckInScreen = () => {
                                 borderRadius: 8,
                                 flexDirection: "row",
                                 alignItems: "center",
-                                paddingVertical: 5,
+                                paddingVertical: 2,
                               }}
                             >
                               <CustomText
@@ -474,7 +474,8 @@ const CheckInScreen = () => {
                                     row.checktype === "1"
                                       ? "#079455"
                                       : "#d92d20",
-                                  paddingHorizontal: 10,
+                                  paddingHorizontal: 5,
+                                  fontSize: 12,
                                 }}
                               >
                                 {row.statusName}
