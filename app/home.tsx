@@ -33,14 +33,18 @@ const home = () => {
       <Appbar.Header style={{ backgroundColor: "transparent", elevation: 0 }}>
         <View style={{ flexDirection: "row", alignItems: "center", flex: 1 }}>
           <Image
-            source={require("@/assets/images/logo.png")}
-            style={{ width: 100, height: 45, marginRight: 10 }}
+            source={require("@/assets/images/thasala-icon.png")}
+            style={{ width: 160, height: 45, marginRight: 10 }}
             resizeMode="contain"
           />
         </View>
         {/* <Appbar.Action icon="qrcode" color={theme.colors.primary} size={30} /> */}
-        <Appbar.Action icon="bell-outline" color={theme.colors.primary} size={30} onPress={() => router.push("/noti")}
- />
+        <Appbar.Action
+          icon="bell-outline"
+          color={theme.colors.primary}
+          size={30}
+          onPress={() => router.push("/noti")}
+        />
 
         <View>
           <Avatar.Image

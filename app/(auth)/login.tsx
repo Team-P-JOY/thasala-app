@@ -22,7 +22,7 @@ const Login = () => {
   });
   const [loading, setLoading] = useState(false);
   const dispatch = useDispatch();
-  const [expoPushToken, setExpoPushToken] = useState<any>('');
+  const [expoPushToken, setExpoPushToken] = useState<any>("");
 
   const loginApi = async (username: string, password: string) => {
     const res = await axios.post("https://hrms.wu.ac.th/index.php?r=api/auth", {
@@ -38,19 +38,21 @@ const Login = () => {
       formData.append("personId", res.data.data.person_id);
       formData.append("expoToken", expoToken ?? "");
       formData.append("osname", osname ?? "");
-    
+
       try {
-        const response = await fetch("http://10.250.2.9/apis/mbl/mbl-register/registerApp", {
-          method: "POST",
-          body: formData,
-        });
-    
+        const response = await fetch(
+          "http://10.250.2.9/apis/mbl/mbl-register/registerApp",
+          {
+            method: "POST",
+            body: formData,
+          }
+        );
+
         const result = await response.json();
         if (result.code === 200) {
           //console.error("Success:");
-        } 
-      } 
-      catch (error) {
+        }
+      } catch (error) {
         // console.error("Submit Error:", error);
         // alert("เกิดข้อผิดพลาดขณะส่งข้อมูล");
       }
@@ -92,7 +94,7 @@ const Login = () => {
       <View>
         <Image
           resizeMode="contain"
-          source={require("@/assets/images/main.png")}
+          source={require("@/assets/images/thasala-main.png")}
           style={{ height: 200 }}
         />
       </View>

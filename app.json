@@ -1,21 +1,25 @@
 {
   "expo": {
-    "name": "Thasala",
+    "name": "WU Thasala",
     "slug": "thasala-app",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/logo.png",
+    "icon": "./assets/images/thasala-logo.png",
     "scheme": "thasala-app",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "icon": "./assets/images/thasala-logo.png",
+      "backgroundColor": "#ffffff"
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/images/logo.png",
+        "foregroundImage": "./assets/images/thasala-logo.png",
         "backgroundColor": "#ffffff"
       },
+      "icon": "./assets/images/thasala-logo.png",
+      "backgroundColor": "#ffffff",
       "edgeToEdgeEnabled": true,
       "config": {
         "googleMaps": {
@@ -26,14 +30,15 @@
     "web": {
       "bundler": "metro",
       "output": "static",
-      "favicon": "./assets/images/logo.png"
+      "favicon": "./assets/images/thasala-logo.png"
     },
     "plugins": [
       "expo-router",
+      "expo-font",
       [
         "expo-splash-screen",
         {
-          "image": "./assets/images/main.png",
+          "image": "./assets/images/thasala-logo.png",
           "imageWidth": 200,
           "resizeMode": "contain",
           "backgroundColor": "#ffffff"
@@ -63,7 +68,7 @@
       [
         "expo-notifications",
         {
-          "icon": "./assets/images/main.png",
+          "icon": "./assets/images/thasala-logo.png",
           "color": "#ffffff"
         }
       ]

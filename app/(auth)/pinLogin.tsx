@@ -75,8 +75,8 @@ const pinLogin = () => {
       <Appbar.Header style={{ backgroundColor: "transparent", elevation: 0 }}>
         <View style={{ flexDirection: "row", alignItems: "center", flex: 1 }}>
           <Image
-            source={require("@/assets/images/logo.png")}
-            style={{ width: 100, height: 45, marginRight: 10 }}
+            source={require("@/assets/images/thasala-icon.png")}
+            style={{ width: 160, height: 45, marginRight: 10 }}
             resizeMode="contain"
           />
         </View>
@@ -428,12 +428,10 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 20,
-    fontWeight: "bold",
     color: theme.colors.primary,
   },
   title2: {
     fontSize: 24,
-    fontWeight: "bold",
     color: theme.colors.primary,
   },
   avatar: {
@@ -468,7 +466,6 @@ const styles = StyleSheet.create({
     width: 60,
     fontSize: 32,
     color: theme.colors.primary,
-    fontWeight: "bold",
     textAlign: "center",
     justifyContent: "center",
     alignItems: "center",
