@@ -16,10 +16,10 @@ import {
   ScrollView,
   StyleSheet,
   TextInput,
-  ToastAndroid,
   TouchableOpacity,
   View,
 } from "react-native";
+import { Modal, Portal } from "react-native-paper";
 import { WebView } from "react-native-webview";
 import { useSelector } from "react-redux";
 
@@ -54,21 +54,23 @@ const CheckInScreen = () => {
   });
   const router = useRouter();
 
-  const onRefresh = () => {
-    setRefreshing(true);
-    setTimeout(() => {
-      setRefreshing(false);
-    }, 2000);
-  };
+  const [visible, setVisible] = useState(false);
+  const [modalText, setModalText] = useState("");
+  const showModal = () => setVisible(true);
+  const hideModal = () => setVisible(false);
 
   const submitCheckinStatus = async (status: number) => {
-    // ...ตรวจสอบเหมือนเดิม...
-
     const formData = new FormData();
     formData.append("personId", user.person_id.toString());
     formData.append("status", status.toString());
-    formData.append("lat", location.latitude.toString().substring(0, 10));
-    formData.append("lng", location.longitude.toString().substring(0, 10));
+    formData.append(
+      "lat",
+      location.latitude.toString().substring(0, 10) || "0"
+    );
+    formData.append(
+      "lng",
+      location.longitude.toString().substring(0, 10) || "0"
+    );
     formData.append("device", Platform.OS);
     formData.append("unitId", locationStatus.unitId?.toString() ?? "1");
     formData.append("distance", locationStatus.distance.toString());
@@ -83,12 +85,11 @@ const CheckInScreen = () => {
           body: formData,
         }
       );
-
       const result = await response.json();
-      console.log(result);
       setPhoto(null);
       if (result.code === 200) {
-        ToastAndroid.show("บันทึกสำเร็จ", ToastAndroid.SHORT);
+        // ToastAndroid.show("บันทึกสำเร็จ", ToastAndroid.SHORT);
+        showModal();
       } else {
         alert("บันทึกล้มเหลว: " + JSON.stringify(result));
       }
@@ -223,7 +224,6 @@ const CheckInScreen = () => {
         nearLocation === null ||
         distanceRadius < nearLocation.distance
       ) {
-        //  console.log(locations[i]);
         nearLocation = {
           status: status,
           message: locations[i].UNIT_NAME,
@@ -235,7 +235,6 @@ const CheckInScreen = () => {
     }
 
     if (nearLocation) {
-      //  console.log("ใกล้สถานที่:", nearLocation);
       setLocationStatus({
         status: nearLocation.distance < 0 ? 1 : 0,
         message:
@@ -459,12 +458,13 @@ const CheckInScreen = () => {
                               style={{
                                 backgroundColor:
                                   row.checktype === "1"
-                                    ? "rgba(208,237,218,0.5)"
-                                    : "rgba(240,216,214,0.5)",
+                                    ? "rgba(208,237,218,0.4)"
+                                    : "rgba(240,216,214,0.4)",
                                 borderRadius: 8,
                                 flexDirection: "row",
                                 alignItems: "center",
                                 paddingVertical: 2,
+                                justifyContent: "space-between",
                               }}
                             >
                               <CustomText
@@ -481,7 +481,12 @@ const CheckInScreen = () => {
                                 {row.statusName}
                               </CustomText>
 
-                              <View>
+                              <View
+                                style={{
+                                  alignItems: "flex-end",
+                                  paddingHorizontal: 5,
+                                }}
+                              >
                                 <CustomText
                                   bold
                                   style={{
@@ -701,6 +706,7 @@ const CheckInScreen = () => {
               }
               takePicture();
               submitCheckinStatus(locationStatus.status === 1 ? 2 : 92);
+              setModalText("เข้างานสำเร็จแล้ว");
             }}
             activeOpacity={0.8}
           >
@@ -729,6 +735,7 @@ const CheckInScreen = () => {
               }
               takePicture();
               submitCheckinStatus(locationStatus.status === 1 ? 3 : 93);
+              setModalText("ออกงานสำเร็จแล้ว");
             }}
             activeOpacity={0.8}
           >
@@ -746,6 +753,62 @@ const CheckInScreen = () => {
           </TouchableOpacity>
         </View>
       </View>
+
+      <Portal>
+        <Modal
+          visible={visible}
+          onDismiss={hideModal}
+          contentContainerStyle={{
+            backgroundColor: "white",
+            padding: 20,
+            margin: 20,
+            borderRadius: 10,
+          }}
+        >
+          <View
+            style={{
+              alignItems: "center",
+              justifyContent: "center",
+              paddingHorizontal: 20,
+            }}
+          >
+            <Ionicons
+              name="checkmark-circle-outline"
+              size={60}
+              style={{ color: theme.colors.primary, marginBottom: 10 }}
+            />
+            <CustomText
+              bold
+              style={{
+                color: theme.colors.primary,
+                fontSize: 20,
+                marginBottom: 10,
+              }}
+            >
+              {modalText || "บันทึกสำเร็จ"}
+            </CustomText>
+
+            <TouchableOpacity
+              onPress={() => {
+                hideModal();
+              }}
+              style={{
+                padding: 10,
+                paddingHorizontal: 20,
+                backgroundColor: theme.colors.primary,
+                borderRadius: 5,
+                marginTop: 20,
+                width: "100%",
+                alignItems: "center",
+              }}
+            >
+              <CustomText bold style={{ color: "white" }}>
+                ตกลง
+              </CustomText>
+            </TouchableOpacity>
+          </View>
+        </Modal>
+      </Portal>
     </CustomBackground>
   );
 };
