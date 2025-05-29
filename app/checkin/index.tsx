@@ -471,10 +471,11 @@ const CheckInScreen = () => {
                               <CustomText
                                 bold
                                 style={{
-                                  color:
-                                    row.checktype === "1"
-                                      ? "#079455"
-                                      : "#d92d20",
+                                  color: row.statusName?.includes("รออนุมัติ")
+                                    ? "#dc6803"
+                                    : row.checktype === "1"
+                                    ? "#079455"
+                                    : "#d92d20",
                                   paddingLeft: 10,
                                   fontSize: 12,
                                 }}
