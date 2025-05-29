@@ -1,5 +1,6 @@
 import CustomBackground from "@/components/CustomBackground";
 import CustomTopBar from "@/components/CustomTopBar";
+import Modal from "@/components/Modal";
 import { RootState } from "@/core/store";
 import { theme } from "@/core/theme";
 import { Ionicons } from "@expo/vector-icons";
@@ -25,16 +26,24 @@ import { WebView } from "react-native-webview";
 import { useSelector } from "react-redux";
 
 const CheckInScreen = () => {
+  const [modalVisible, setModalVisible] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const { user } = useSelector((state: RootState) => state.auth);
   const [reason, setReason] = useState("");
   const [reasonError, setReasonError] = useState(false);
 
-  const [hasCameraPermission, setHasCameraPermission] = useState<boolean | null>(null);
-  const [hasLocationPermission, setHasLocationPermission] = useState<boolean | null>(null);
+  const [hasCameraPermission, setHasCameraPermission] = useState<
+    boolean | null
+  >(null);
+  const [hasLocationPermission, setHasLocationPermission] = useState<
+    boolean | null
+  >(null);
   const cameraRef = useRef<any>(null as any);
   const [photo, setPhoto] = useState<string | null>(null);
-  const [location, setLocation] = useState<{ latitude: number | null; longitude: number | null; }>({ latitude: null, longitude: null });
+  const [location, setLocation] = useState<{
+    latitude: number | null;
+    longitude: number | null;
+  }>({ latitude: null, longitude: null });
   const [currentTime, setCurrentTime] = useState<Date>(new Date());
   const [cameraType, setCameraType] = useState<"front" | "back">("front");
   const [locations, setLocations] = useState<any[]>([]);
@@ -53,45 +62,69 @@ const CheckInScreen = () => {
     }, 2000);
   };
 
-const submitCheckinStatus = async (status: number) => {
-  // ...ตรวจสอบเหมือนเดิม...
+  const submitCheckinStatus = async (status: number) => {
+    // ...ตรวจสอบเหมือนเดิม...
 
-  const formData = new FormData();
-  formData.append("personId", user.person_id.toString());
-  formData.append("status", status.toString());
-formData.append("lat", location.latitude.toString().substring(0, 10));
-formData.append("lng", location.longitude.toString().substring(0, 10));
-  formData.append("device", Platform.OS);
-  formData.append("unitId", locationStatus.unitId?.toString() ?? "1");
-  formData.append("distance", locationStatus.distance.toString());
-  formData.append("radius", "60");
-  formData.append("remark", locationStatus.status !== 1 ? reason : "");
+    const formData = new FormData();
+    formData.append("personId", user.person_id.toString());
+    formData.append("status", status.toString());
+    formData.append(
+      "lat",
+      location.latitude !== null
+        ? location.latitude.toString().substring(0, 10)
+        : ""
+    );
+    formData.append(
+      "lng",
+      location.longitude !== null
+        ? location.longitude.toString().substring(0, 10)
+        : ""
+    );
+    formData.append("device", Platform.OS);
+    formData.append("unitId", locationStatus.unitId?.toString() ?? "1");
+    formData.append("distance", locationStatus.distance.toString());
+    formData.append("radius", "60");
+    formData.append("remark", locationStatus.status !== 1 ? reason : "");
 
-  // Log ข้อมูลที่จะส่ง
-  for (let pair of formData.entries()) {
-    console.log(pair[0]+ ': ' + pair[1]);
-  }
-
-  try {
-    const response = await fetch("https://apisqas.wu.ac.th/tal/tal-timework/timestamp", {
-      method: "POST",
-      body: formData,
-    });
-
-    const result = await response.json();
-    console.log(result);
-    if (result.code === 200) {
-      ToastAndroid.show("บันทึกสำเร็จ", ToastAndroid.SHORT);
-
-    } else {
-      alert("บันทึกล้มเหลว: " + JSON.stringify(result));
-
+    // Log ข้อมูลที่จะส่ง
+    for (let pair of formData.entries()) {
+      console.log(pair[0] + ": " + pair[1]);
     }
-  } catch (error) {
-    console.error("Submit Error:", error);
-    alert("เกิดข้อผิดพลาดขณะส่งข้อมูล");
+
+    try {
+      const response = await fetch(
+        "https://apisqas.wu.ac.th/tal/tal-timework/timestamp",
+        {
+          method: "POST",
+          body: formData,
+        }
+      );
+
+      const result = await response.json();
+      console.log(result);
+      if (result.code === 200) {
+        ToastAndroid.show("บันทึกสำเร็จ", ToastAndroid.SHORT);
+        setModalVisible(true);
+      } else {
+        alert("บันทึกล้มเหลว: " + JSON.stringify(result));
+      }
+    } catch (error) {
+      console.error("Submit Error:", error);
+      alert("เกิดข้อผิดพลาดขณะส่งข้อมูล");
+    }
+  };
+
+  async function _callHistory() {
+    try {
+      const response = await fetch("https://e-jpas.wu.ac.th/checkin/point.js");
+      const json = await response.json();
+      console.log("Fetched history:", json);
+    } catch (error) {
+      console.error("Error fetching history:", error);
+    } finally {
+      // setLoadingLocations(false);
+    }
   }
-};
 
   useEffect(() => {
     const fetchLocations = async () => {
@@ -195,7 +228,7 @@ formData.append("lng", location.longitude.toString().substring(0, 10));
         nearLocation === null ||
         distanceRadius < nearLocation.distance
       ) {
-      //  console.log(locations[i]);
+        //  console.log(locations[i]);
         nearLocation = {
           status: status,
           message: locations[i].UNIT_NAME,
@@ -207,7 +240,7 @@ formData.append("lng", location.longitude.toString().substring(0, 10));
     }
 
     if (nearLocation) {
-    //  console.log("ใกล้สถานที่:", nearLocation);
+      //  console.log("ใกล้สถานที่:", nearLocation);
       setLocationStatus({
         status: nearLocation.distance < 0 ? 1 : 0,
         message:
@@ -363,12 +396,12 @@ formData.append("lng", location.longitude.toString().substring(0, 10));
                   },
                 ]}
               >
-(
-    ระยะห่าง
-    {locationStatus.distance < 1000
-      ? ` ${locationStatus.distance.toFixed(2)} ม.`
-      : ` ${(locationStatus.distance / 1000).toFixed(2)} กม.`}
-  )              </Text>
+                ( ระยะห่าง
+                {locationStatus.distance < 1000
+                  ? ` ${locationStatus.distance.toFixed(2)} ม.`
+                  : ` ${(locationStatus.distance / 1000).toFixed(2)} กม.`}
+                ){" "}
+              </Text>
             ) : (
               ""
             )}
@@ -406,7 +439,7 @@ formData.append("lng", location.longitude.toString().substring(0, 10));
                           }}
                           placeholder="ใส่เหตุผลที่นี่"
                           value={reason}
-                          onChangeText={txt => {
+                          onChangeText={(txt) => {
                             setReason(txt);
                             setReasonError(false);
                           }}
@@ -419,51 +452,60 @@ formData.append("lng", location.longitude.toString().substring(0, 10));
                         )}
                       </View>
                     )}
-          <View style={styles.buttonRow}>
-  <TouchableOpacity
-    style={styles.captureButton}
-    onPress={() => {
-      if (locationStatus.status !== 1 && !reason.trim()) {
-        setReasonError(true);
-        return;
-      }
-      takePicture();
-      submitCheckinStatus(locationStatus.status === 1 ? 2 : 92);
-    }}
-    activeOpacity={0.8}
-  >
-    <View style={styles.iconTextRow}>
-      <Ionicons name="log-in-outline" size={22} color="#fff" style={{ marginRight: 8 }} />
-      <Text style={styles.buttonText}>
-        {"เข้างาน"}
-      </Text>
-    </View>
-  </TouchableOpacity>
+                    <View style={styles.buttonRow}>
+                      <TouchableOpacity
+                        style={styles.captureButton}
+                        onPress={() => {
+                          if (locationStatus.status !== 1 && !reason.trim()) {
+                            setReasonError(true);
+                            return;
+                          }
+                          takePicture();
+                          submitCheckinStatus(
+                            locationStatus.status === 1 ? 2 : 92
+                          );
+                        }}
+                        activeOpacity={0.8}
+                      >
+                        <View style={styles.iconTextRow}>
+                          <Ionicons
+                            name="log-in-outline"
+                            size={22}
+                            color="#fff"
+                            style={{ marginRight: 8 }}
+                          />
+                          <Text style={styles.buttonText}>{"เข้างาน"}</Text>
+                        </View>
+                      </TouchableOpacity>
 
-  <TouchableOpacity
-    style={[styles.captureButton, { backgroundColor: "#C25D53" }]} // สีปุ่มออกงานต่างหน่อย
-    onPress={() => {
-      if (locationStatus.status !== 1 && !reason.trim()) {
-        setReasonError(true);
-        return;
-      }
-      takePicture();
-      submitCheckinStatus(locationStatus.status === 1 ? 3 : 93);
-    }}
-    activeOpacity={0.8}
-  >
-    <View style={styles.iconTextRow}>
-      <Ionicons name="log-out-outline" size={22} color="#fff" style={{ marginRight: 8 }} />
-      <Text style={styles.buttonText}>
-        {"ออกงาน"}
-      </Text>
-    </View>
-  </TouchableOpacity>
-</View>
-
-
-
-                    
+                      <TouchableOpacity
+                        style={[
+                          styles.captureButton,
+                          { backgroundColor: "#C25D53" },
+                        ]} // สีปุ่มออกงานต่างหน่อย
+                        onPress={() => {
+                          if (locationStatus.status !== 1 && !reason.trim()) {
+                            setReasonError(true);
+                            return;
+                          }
+                          takePicture();
+                          submitCheckinStatus(
+                            locationStatus.status === 1 ? 3 : 93
+                          );
+                        }}
+                        activeOpacity={0.8}
+                      >
+                        <View style={styles.iconTextRow}>
+                          <Ionicons
+                            name="log-out-outline"
+                            size={22}
+                            color="#fff"
+                            style={{ marginRight: 8 }}
+                          />
+                          <Text style={styles.buttonText}>{"ออกงาน"}</Text>
+                        </View>
+                      </TouchableOpacity>
+                    </View>
                   </View>
                 </CameraView>
               ) : (
@@ -514,8 +556,8 @@ formData.append("lng", location.longitude.toString().substring(0, 10));
                       }).addTo(map);
 
                       L.marker([${location.latitude}, ${
-                        location.longitude
-                      }]).addTo(map).openPopup();
+                          location.longitude
+                        }]).addTo(map).openPopup();
                       var locations = ${JSON.stringify(locations)};
                       locations.forEach(function(location) {
                         var circle = L.circle([parseFloat(location.LAT), parseFloat(location.LNG)], {
@@ -564,47 +606,64 @@ formData.append("lng", location.longitude.toString().substring(0, 10));
             </View>
           </View>
         </View>
+
+        <Modal
+          visible={modalVisible}
+          title={"ออกจากระบบ"}
+          description={"คุณต้องการออกจากระบบหรือไม่?"}
+          hideModal={() => {
+            setModalVisible(false);
+          }}
+          accept={async () => {
+            // await signOut();
+            // dispatch(logout());
+            // setModalVisible(false);
+            // router.replace("/");
+          }}
+          acceptText={"ตกลง"}
+          cancelText={"ยกเลิก"}
+        />
       </ScrollView>
     </CustomBackground>
   );
 };
 
 const styles = StyleSheet.create({
-buttonRow: {
-  flexDirection: "row",
-  justifyContent: "center",
-  width: "100%",
-  marginBottom: 0,
-},
-captureButton: {
-  flexDirection: "row",
-  alignItems: "center",
-  backgroundColor: "#5A9C43", // สีเข้างาน
-  borderWidth: 0,
-  paddingVertical: 12,
-  paddingHorizontal: 18,
-  marginHorizontal: 10,
-  borderRadius: 30,
-  shadowColor: "#000",
-  shadowOpacity: 0.1,
-  shadowOffset: { width: 0, height: 2 },
-  shadowRadius: 4,
-  elevation: 2,
-  minWidth: 120,
-  justifyContent: "center",
-},
-iconTextRow: {
-  flexDirection: "row",
-  alignItems: "center",
-  justifyContent: "center",
-},
-buttonText: {
-  fontSize: 18,
-  fontWeight: "bold",
-  color: "#fff",
-  textAlign: "center",
-  paddingLeft: 0,
-},
+  buttonRow: {
+    flexDirection: "row",
+    justifyContent: "center",
+    width: "100%",
+    marginBottom: 0,
+  },
+  captureButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#5A9C43", // สีเข้างาน
+    borderWidth: 0,
+    paddingVertical: 12,
+    paddingHorizontal: 18,
+    marginHorizontal: 10,
+    borderRadius: 30,
+    shadowColor: "#000",
+    shadowOpacity: 0.1,
+    shadowOffset: { width: 0, height: 2 },
+    shadowRadius: 4,
+    elevation: 2,
+    minWidth: 120,
+    justifyContent: "center",
+  },
+  iconTextRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  buttonText: {
+    fontSize: 18,
+    fontWeight: "bold",
+    color: "#fff",
+    textAlign: "center",
+    paddingLeft: 0,
+  },
 
   container: {
     flex: 1,
