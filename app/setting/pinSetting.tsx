@@ -256,12 +256,10 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 20,
-    fontWeight: "bold",
     color: theme.colors.primary,
   },
   title2: {
     fontSize: 24,
-    fontWeight: "bold",
     color: theme.colors.primary,
   },
   avatar: {
@@ -296,7 +294,7 @@ const styles = StyleSheet.create({
     width: 60,
     fontSize: 32,
     color: theme.colors.primary,
-    fontWeight: "bold",
+
     textAlign: "center",
     justifyContent: "center",
     alignItems: "center",

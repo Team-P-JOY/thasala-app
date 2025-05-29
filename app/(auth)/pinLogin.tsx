@@ -466,7 +466,6 @@ const styles = StyleSheet.create({
     width: 60,
     fontSize: 32,
     color: theme.colors.primary,
-    fontWeight: "bold",
     textAlign: "center",
     justifyContent: "center",
     alignItems: "center",
