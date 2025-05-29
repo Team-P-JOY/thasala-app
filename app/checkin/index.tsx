@@ -6,6 +6,7 @@ import { theme } from "@/core/theme";
 import { Ionicons } from "@expo/vector-icons";
 import { useFocusEffect } from "@react-navigation/native";
 import { Camera, CameraView } from "expo-camera";
+import { LinearGradient } from "expo-linear-gradient";
 import * as Location from "expo-location";
 import { useRouter } from "expo-router";
 import React, { useCallback, useEffect, useRef, useState } from "react";
@@ -333,193 +334,317 @@ const CheckInScreen = () => {
         <View style={styles.header}>
           <View style={{ flex: 1 }}>
             <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
-              <CustomText style={styles.headerText}>
-                วันที่{" "}
-                {(() => {
-                  const date = currentTime;
-                  const buddhistYear = date.getFullYear() + 543;
-                  const month = date.toLocaleString("th-TH", {
-                    month: "short",
-                  });
-                  const day = date.toLocaleString("th-TH", { day: "2-digit" });
-                  return `${day} ${month} ${buddhistYear}`;
-                })()}
-              </CustomText>
-              <CustomText bold style={styles.headerText}>
-                เวลา {currentTime.toLocaleTimeString("th-TH")}
-              </CustomText>
-
               <View
                 style={{
                   flexDirection: "row",
-                  alignItems: "center",
-                  gap: 5,
-                  paddingTop: 5,
+                  justifyContent: "space-between",
+                  alignItems: "flex-start",
+                  width: "100%",
                 }}
               >
-                {locationStatus.status === 2 && (
-                  <ActivityIndicator animating={true} color="blue" />
-                )}
-
-                <CustomText
-                  style={[
-                    styles.headerStatus,
-                    {
-                      color:
-                        locationStatus.status === 1
-                          ? "#245373"
-                          : locationStatus.status === 2
-                          ? "#dc6803"
-                          : "#dc6803",
-                    },
-                  ]}
-                >
-                  {locationStatus.message}
-                </CustomText>
-              </View>
-              {locationStatus.distance !== 0 ? (
-                <CustomText
-                  style={[
-                    styles.headerStatusDis,
-                    {
-                      color:
-                        locationStatus.status === 1
-                          ? "#245373"
-                          : locationStatus.status === 2
-                          ? "#dc6803"
-                          : "#dc6803",
-                    },
-                  ]}
-                >
-                  ( ระยะห่าง
-                  {locationStatus.distance < 1000
-                    ? ` ${locationStatus.distance.toFixed(2)} ม.`
-                    : ` ${(locationStatus.distance / 1000).toFixed(2)} กม.`}
-                  ){" "}
-                </CustomText>
-              ) : (
-                ""
-              )}
-
-              {locationStatus.status !== 2 && (
-                <CustomText style={[styles.headerStatus2]}>
-                  {location.latitude}, {location.longitude}{" "}
-                </CustomText>
-              )}
-
-              <View style={{ marginTop: 10, flex: 1 }}>
-                <CustomText
-                  style={{
-                    color: theme.colors.primary,
-                    fontSize: 12,
-                  }}
-                >
-                  ประวัติการเช็คอินวันนี้
-                </CustomText>
-                {loadingCheckins ? (
-                  <ActivityIndicator
-                    color="orange"
-                    size="small"
-                    style={{ marginTop: 10 }}
-                  />
-                ) : checkinLogs.length === 0 ? (
-                  <CustomText style={{ color: "gray", marginTop: 6 }}>
-                    ยังไม่มีข้อมูลเช็คอินวันนี้
+                <View style={{ flex: 1, padding: 5, minWidth: 0 }}>
+                  <CustomText style={styles.headerText}>
+                    วันที่{" "}
+                    {(() => {
+                      const date = currentTime;
+                      const buddhistYear = date.getFullYear() + 543;
+                      const month = date.toLocaleString("th-TH", {
+                        month: "short",
+                      });
+                      const day = date.toLocaleString("th-TH", {
+                        day: "2-digit",
+                      });
+                      return `${day} ${month} ${buddhistYear}`;
+                    })()}
                   </CustomText>
-                ) : (
+                  <CustomText bold style={styles.headerText}>
+                    เวลา {currentTime.toLocaleTimeString("th-TH")}
+                  </CustomText>
+
                   <View
                     style={{
-                      flex: 1,
-                      marginTop: 10,
-                      paddingBottom: 10,
-                      zIndex: 1,
+                      flexDirection: "row",
+                      alignItems: "center",
+                      gap: 5,
+                      paddingTop: 5,
                     }}
                   >
-                    <View
+                    {locationStatus.status === 2 && (
+                      <ActivityIndicator animating={true} color="blue" />
+                    )}
+
+                    <CustomText
+                      style={[
+                        styles.headerStatus,
+                        {
+                          color:
+                            locationStatus.status === 1
+                              ? "#245373"
+                              : locationStatus.status === 2
+                              ? "#dc6803"
+                              : "#dc6803",
+                        },
+                      ]}
+                    >
+                      {locationStatus.message}
+                    </CustomText>
+                  </View>
+
+                  {locationStatus.distance !== 0 ? (
+                    <CustomText
+                      style={[
+                        styles.headerStatusDis,
+                        {
+                          color:
+                            locationStatus.status === 1
+                              ? "#245373"
+                              : locationStatus.status === 2
+                              ? "#dc6803"
+                              : "#dc6803",
+                        },
+                      ]}
+                    >
+                      ( ระยะห่าง
+                      {locationStatus.distance < 1000
+                        ? ` ${locationStatus.distance.toFixed(2)} ม.`
+                        : ` ${(locationStatus.distance / 1000).toFixed(2)} กม.`}
+                      ){" "}
+                    </CustomText>
+                  ) : (
+                    ""
+                  )}
+
+                  {locationStatus.status !== 2 && (
+                    <CustomText style={[styles.headerStatus2]}>
+                      {location.latitude}, {location.longitude}{" "}
+                    </CustomText>
+                  )}
+
+                  <View style={{ marginTop: 10, flex: 1 }}>
+                    <CustomText
                       style={{
-                        gap: 5,
+                        color: theme.colors.primary,
+                        fontSize: 12,
                       }}
                     >
-                      {checkinLogs.map((row, idx) => (
+                      ประวัติการเช็คอินวันนี้
+                    </CustomText>
+                    {loadingCheckins ? (
+                      <ActivityIndicator
+                        color="orange"
+                        size="small"
+                        style={{ marginTop: 10 }}
+                      />
+                    ) : checkinLogs.length === 0 ? (
+                      <CustomText style={{ color: "gray", marginTop: 6 }}>
+                        ยังไม่มีข้อมูลเช็คอินวันนี้
+                      </CustomText>
+                    ) : (
+                      <View
+                        style={{
+                          flex: 1,
+                          marginTop: 10,
+                          paddingBottom: 10,
+                          zIndex: 1,
+                        }}
+                      >
                         <View
-                          key={idx}
                           style={{
-                            backgroundColor:
-                              row.checktype === "1"
-                                ? "rgba(208,237,218,0.5)"
-                                : "rgba(240,216,214,0.5)",
-                            borderRadius: 8,
-                            flexDirection: "row",
-                            alignItems: "center",
-                            paddingVertical: 5,
+                            gap: 2,
                           }}
                         >
-                          <CustomText
-                            bold
-                            style={{
-                              color:
-                                row.checktype === "1" ? "#079455" : "#d92d20",
-                              paddingHorizontal: 10,
-                            }}
-                          >
-                            {row.statusName}
-                          </CustomText>
-
-                          <View>
-                            <CustomText
-                              bold
-                              style={{
-                                color: theme.colors.primary,
-                                fontSize: 12,
-                              }}
-                            >
-                              เวลา {row.timeCheckin}
-                            </CustomText>
-
+                          {checkinLogs.map((row, idx) => (
                             <View
+                              key={idx}
                               style={{
+                                backgroundColor:
+                                  row.checktype === "1"
+                                    ? "rgba(208,237,218,0.5)"
+                                    : "rgba(240,216,214,0.5)",
+                                borderRadius: 8,
                                 flexDirection: "row",
                                 alignItems: "center",
+                                paddingVertical: 2,
                               }}
                             >
-                              {row.gps === "1" && (
-                                <Ionicons
-                                  name="location-outline"
-                                  size={10}
-                                  color={theme.colors.primary}
-                                  style={{ marginRight: 2 }}
-                                />
-                              )}
-                              {row.unitNameFin && (
+                              <CustomText
+                                bold
+                                style={{
+                                  color:
+                                    row.checktype === "1"
+                                      ? "#079455"
+                                      : "#d92d20",
+                                  paddingHorizontal: 5,
+                                  fontSize: 12,
+                                }}
+                              >
+                                {row.statusName}
+                              </CustomText>
+
+                              <View>
                                 <CustomText
+                                  bold
                                   style={{
-                                    fontSize: 10,
                                     color: theme.colors.primary,
+                                    fontSize: 12,
                                   }}
                                 >
-                                  {row.unitNameFin}
+                                  เวลา {row.timeCheckin}
                                 </CustomText>
-                              )}
-                              {row.unitNameGps && (
-                                <CustomText
+
+                                <View
                                   style={{
-                                    fontSize: 10,
-                                    color: theme.colors.primary,
+                                    flexDirection: "row",
+                                    alignItems: "center",
                                   }}
                                 >
-                                  {row.unitNameGps}
-                                </CustomText>
-                              )}
+                                  {row.gps === "1" && (
+                                    <Ionicons
+                                      name="location-outline"
+                                      size={10}
+                                      color={theme.colors.primary}
+                                      style={{ marginRight: 2 }}
+                                    />
+                                  )}
+                                  {row.unitNameFin && (
+                                    <CustomText
+                                      style={{
+                                        fontSize: 10,
+                                        color: theme.colors.primary,
+                                      }}
+                                    >
+                                      {row.unitNameFin}
+                                    </CustomText>
+                                  )}
+                                  {row.unitNameGps && (
+                                    <CustomText
+                                      style={{
+                                        fontSize: 10,
+                                        color: theme.colors.primary,
+                                      }}
+                                    >
+                                      {row.unitNameGps}
+                                    </CustomText>
+                                  )}
+                                </View>
+                              </View>
                             </View>
-                          </View>
+                          ))}
                         </View>
-                      ))}
+                      </View>
+                    )}
+                  </View>
+                </View>
+                <View style={{ width: 160, padding: 5 }}>
+                  <View style={styles.mapContainer}>
+                    <View
+                      style={[
+                        styles.map,
+                        { borderColor: theme.colors.primary },
+                      ]}
+                    >
+                      {location &&
+                      locations.length > 0 &&
+                      locationStatus !== 2 ? (
+                        <>
+                          <WebView
+                            originWhitelist={["*"]}
+                            javaScriptEnabled={true}
+                            domStorageEnabled={true}
+                            source={{
+                              html: `
+              <!DOCTYPE html>
+              <html>
+              <head>
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+                <style>
+                  body, html { margin: 0; padding: 0; height: 100%; }
+                  #map { height: 100vh; width: 100vw; }
+                </style>
+              </head>
+              <body>
+                <div id="map"></div>
+                <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+                <script>
+                  document.addEventListener("DOMContentLoaded", function() {
+                     var map = L.map('map', {
+                      center: [${location.latitude}, ${location.longitude}],
+                      zoom: 16,
+                      zoomControl: false,
+                      attributionControl: false,
+                      dragging: false,
+                      touchZoom: false,
+                      scrollWheelZoom: false,
+                      doubleClickZoom: false,
+                      boxZoom: false,
+                      keyboard: false
+                    });
+                    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                      maxZoom: 19,
+                    }).addTo(map);
+
+                    L.marker([${location.latitude}, ${
+                                location.longitude
+                              }]).addTo(map).openPopup();
+                    var locations = ${JSON.stringify(locations)};
+                    locations.forEach(function(location) {
+                      var circle = L.circle([parseFloat(location.LAT), parseFloat(location.LNG)], {
+                            radius: parseFloat(location.RADIUS),
+                            color: '#6a11cb',
+                            fillColor: '#6a11cb',
+                            weight: 0.5,
+                            fillOpacity: 0.2,
+                            bubblingMouseEvents: false,
+                            keyboard: false
+                          }).addTo(map);
+                      });
+                    });
+                </script>
+              </body>
+              </html>`,
+                            }}
+                          />
+                        </>
+                      ) : (
+                        <CustomText>กำลังดึงตำแหน่ง GPS...</CustomText>
+                      )}
+                    </View>
+
+                    <View style={styles.buttonsRow}>
+                      <TouchableOpacity
+                        style={styles.mapButton}
+                        onPress={_callCurrentLocation}
+                      >
+                        <Ionicons
+                          name="location-outline"
+                          size={28}
+                          color="white"
+                        />
+                      </TouchableOpacity>
+                      <TouchableOpacity
+                        style={styles.mapButton}
+                        onPress={switchCamera}
+                      >
+                        <Ionicons
+                          name="camera-reverse-outline"
+                          size={28}
+                          color="white"
+                        />
+                      </TouchableOpacity>
                     </View>
                   </View>
-                )}
+                </View>
               </View>
             </ScrollView>
           </View>
+
+          <LinearGradient
+            colors={[theme.colors.primary, "transparent"]}
+            style={{ height: 90 }}
+            start={{ x: 0, y: 1 }}
+            end={{ x: 0, y: 0 }}
+          />
         </View>
 
         <View style={styles.content}>
@@ -529,90 +654,6 @@ const CheckInScreen = () => {
               facing={cameraType}
               ref={cameraRef}
             ></CameraView>
-          </View>
-          <View style={styles.mapContainer}>
-            <View style={[styles.map, { borderColor: theme.colors.primary }]}>
-              {location && locations.length > 0 && locationStatus !== 2 ? (
-                <>
-                  <WebView
-                    originWhitelist={["*"]}
-                    javaScriptEnabled={true}
-                    domStorageEnabled={true}
-                    source={{
-                      html: `
-                <!DOCTYPE html>
-                <html>
-                <head>
-                  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
-                  <style>
-                    body, html { margin: 0; padding: 0; height: 100%; }
-                    #map { height: 100vh; width: 100vw; }
-                  </style>
-                </head>
-                <body>
-                  <div id="map"></div>
-                  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-                  <script>
-                    document.addEventListener("DOMContentLoaded", function() {
-                       var map = L.map('map', {
-                        center: [${location.latitude}, ${location.longitude}],
-                        zoom: 16,
-                        zoomControl: false,
-                        attributionControl: false,
-                        dragging: false,
-                        touchZoom: false,
-                        scrollWheelZoom: false,
-                        doubleClickZoom: false,
-                        boxZoom: false,
-                        keyboard: false
-                      });
-                      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                        maxZoom: 19,
-                      }).addTo(map);
-
-                      L.marker([${location.latitude}, ${
-                        location.longitude
-                      }]).addTo(map).openPopup();
-                      var locations = ${JSON.stringify(locations)};
-                      locations.forEach(function(location) {
-                        var circle = L.circle([parseFloat(location.LAT), parseFloat(location.LNG)], {
-                              radius: parseFloat(location.RADIUS),
-                              color: '#6a11cb',
-                              fillColor: '#6a11cb',
-                              weight: 0.5,
-                              fillOpacity: 0.2,
-                              bubblingMouseEvents: false,
-                              keyboard: false
-                            }).addTo(map);
-                        });
-                      });
-                  </script>
-                </body>
-                </html>`,
-                    }}
-                  />
-                </>
-              ) : (
-                <CustomText>กำลังดึงตำแหน่ง GPS...</CustomText>
-              )}
-            </View>
-
-            <View style={styles.buttonsRow}>
-              <TouchableOpacity
-                style={styles.mapButton}
-                onPress={_callCurrentLocation}
-              >
-                <Ionicons name="location-outline" size={28} color="white" />
-              </TouchableOpacity>
-              <TouchableOpacity style={styles.mapButton} onPress={switchCamera}>
-                <Ionicons
-                  name="camera-reverse-outline"
-                  size={28}
-                  color="white"
-                />
-              </TouchableOpacity>
-            </View>
           </View>
         </View>
       </View>
@@ -747,13 +788,13 @@ const styles = StyleSheet.create({
   },
   header: {
     position: "absolute",
-    top: 10,
-    left: 10,
-    right: 10,
-    bottom: 10,
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
     width: "100%",
     zIndex: 1,
-    paddingRight: 180,
+
     flex: 1,
     height: "100%",
   },
@@ -801,9 +842,6 @@ const styles = StyleSheet.create({
     height: "100%",
   },
   mapContainer: {
-    position: "absolute",
-    top: 10,
-    right: 10,
     width: 150,
   },
   map: {
