@@ -4,48 +4,74 @@ import CustomTopBar from "@/components/CustomTopBar";
 import { theme } from "@/core/theme";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
+  ActivityIndicator,
   Animated,
   Dimensions,
   FlatList,
   StyleSheet,
   TouchableOpacity,
-  View
+  View,
 } from "react-native";
-
-const mockData = {
-  notifications: [
-    { id: "leave", name: "เรื่องการลา", icon: "calendar-outline", count: 2 },
-    { id: "payroll", name: "เรื่องเงินเดือน", icon: "cash-outline", count: 1 },
-    { id: "it", name: "ศูนย์เทคโนโลยี", icon: "laptop-outline", count: 0 },
-  ],
-  tasks: [
-    { id: "leave", name: "เรื่องการลา", icon: "calendar-outline", count: 1 },
-    { id: "payroll", name: "เรื่องเงินเดือน", icon: "cash-outline", count: 0 },
-    { id: "it", name: "ศูนย์เทคโนโลยี", icon: "laptop-outline", count: 4 },
-  ],
-};
 
 const TAB_WIDTH = (Dimensions.get('window').width - 60) / 2;
 
+// Map ชื่อกลุ่มกับ icon (หรือเปลี่ยนตรงนี้)
+const groupIcons = {
+  "เรื่องการลา": "calendar-outline",
+  "เรื่องเงินเดือน": "cash-outline",
+  "ศูนย์เทคโนโลยี": "laptop-outline",
+};
+
+const PERSON_ID = "5800000005"; // หรือเปลี่ยนเป็น dynamic ได้
+
 export default function NotificationModulesScreen() {
   const router = useRouter();
-  const [mode, setMode] = useState<"notifications" | "tasks">("notifications");
-  const anim = React.useRef(new Animated.Value(0)).current;
+  const [mode, setMode] = useState<1 | 2>(1); // 1 = notifications, 2 = tasks
+  const anim = useRef(new Animated.Value(0)).current;
 
-  React.useEffect(() => {
+  const [loading, setLoading] = useState(false);
+  const [notiData, setNotiData] = useState<any[]>([]);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
     Animated.timing(anim, {
-      toValue: mode === "notifications" ? 0 : 1,
+      toValue: mode === 1 ? 0 : 1,
       duration: 220,
       useNativeDriver: false,
     }).start();
   }, [mode]);
 
+  useEffect(() => {
+    fetchNotifications();
+    // eslint-disable-next-line
+  }, [mode]);
+
+  const fetchNotifications = async () => {
+    setLoading(true);
+    setError("");
+    setNotiData([]);
+    try {
+      const url = `http://10.250.2.9/apis/mbl/mbl-notification/${PERSON_ID}/${mode}/getnotification`;
+      const res = await fetch(url);
+      const json = await res.json();
+      if (json.code === 200 && Array.isArray(json.dtNotification)) {
+        setNotiData(json.dtNotification);
+      } else {
+        setNotiData([]);
+      }
+    } catch (e) {
+      setError("ไม่สามารถเชื่อมต่อ API ได้");
+      setNotiData([]);
+    }
+    setLoading(false);
+  };
+
   const handleModulePress = (moduleId: string) => {
     router.push({
       pathname: "/noti/list",
-      params: { module: moduleId, mode },
+      params: { module: moduleId, mode: mode === 1 ? "notifications" : "tasks" },
     });
   };
 
@@ -56,23 +82,27 @@ export default function NotificationModulesScreen() {
         index % 2 === 1 && styles.rowAlt,
         index === 0 && { borderTopWidth: 0 },
       ]}
-      onPress={() => handleModulePress(item.id)}
+      onPress={() => handleModulePress(item.notiGroup)}
       activeOpacity={0.75}
     >
       <View style={styles.iconCol}>
-        <Ionicons name={item.icon} size={30} color={theme.colors.primary} />
+        <Ionicons
+          name={groupIcons[item.notiGroupName] || "notifications-outline"}
+          size={30}
+          color={theme.colors.primary}
+        />
       </View>
       <View style={styles.textCol}>
-        <CustomText bold style={styles.title}>{item.name}</CustomText>
+        <CustomText bold style={styles.title}>{item.notiGroupName}</CustomText>
       </View>
       <View style={styles.countCol}>
-        {item.count > 0 ? (
+        {parseInt(item.notiNum) > 0 ? (
           <View style={styles.badge}>
-            <CustomText bold style={styles.badgeText}>{item.count}</CustomText>
+            <CustomText bold style={styles.badgeText}>{item.notiNum}</CustomText>
           </View>
         ) : (
           <CustomText style={styles.noBadge}>
-            ไม่มี{mode === "notifications" ? "แจ้งเตือน" : "สิ่งที่ต้องทำ"}
+            ไม่มี{mode === 1 ? "แจ้งเตือน" : "สิ่งที่ต้องทำ"}
           </CustomText>
         )}
       </View>
@@ -86,7 +116,7 @@ export default function NotificationModulesScreen() {
   });
 
   return (
-      <CustomBackground>
+    <CustomBackground>
       <CustomTopBar title="แจ้งเตือน & สิ่งที่ต้องทำ" />
       {/* Toggle Bar */}
       <View style={styles.modeToggleBar}>
@@ -101,17 +131,17 @@ export default function NotificationModulesScreen() {
         <TouchableOpacity
           style={styles.tabButton}
           activeOpacity={0.8}
-          onPress={() => setMode("notifications")}
+          onPress={() => setMode(1)}
         >
           <Ionicons
             name="notifications-outline"
             size={18}
-            color={mode === "notifications" ? theme.colors.primary : "#b0b0b0"}
+            color={mode === 1 ? theme.colors.primary : "#b0b0b0"}
           />
           <CustomText bold
             style={[
               styles.tabButtonText,
-              mode === "notifications" && styles.tabButtonTextActive,
+              mode === 1 && styles.tabButtonTextActive,
             ]}
           >
             แจ้งเตือน
@@ -120,45 +150,57 @@ export default function NotificationModulesScreen() {
         <TouchableOpacity
           style={styles.tabButton}
           activeOpacity={0.8}
-          onPress={() => setMode("tasks")}
+          onPress={() => setMode(2)}
         >
           <Ionicons
             name="checkmark-done-outline"
             size={18}
-            color={mode === "tasks" ? theme.colors.primary : "#b0b0b0"}
+            color={mode === 2 ? theme.colors.primary : "#b0b0b0"}
           />
           <CustomText bold
             style={[
               styles.tabButtonText,
-              mode === "tasks" && styles.tabButtonTextActive,
+              mode === 2 && styles.tabButtonTextActive,
             ]}
           >
             สิ่งที่ต้องทำ
           </CustomText>
         </TouchableOpacity>
       </View>
-      <FlatList
-        data={mockData[mode]}
-        keyExtractor={(item) => item.id}
-        renderItem={renderItem}
-        contentContainerStyle={{ paddingTop: 14 }}
-        showsVerticalScrollIndicator={false}
-      />
+
+      {loading ? (
+        <View style={{ alignItems: "center", marginTop: 38 }}>
+          <ActivityIndicator color={theme.colors.primary} size="large" />
+          <CustomText style={{ marginTop: 16, color: "#aaa" }}>
+            กำลังโหลดข้อมูล...
+          </CustomText>
+        </View>
+      ) : error ? (
+        <View style={{ alignItems: "center", marginTop: 38 }}>
+          <Ionicons name="cloud-offline-outline" size={50} color="#c5c5c5" />
+          <CustomText style={{ marginTop: 18, color: "#b0b0b0", fontSize: 16 }}>{error}</CustomText>
+        </View>
+      ) : notiData.length === 0 ? (
+        <View style={{ alignItems: "center", marginTop: 54 }}>
+          <Ionicons name="cloud-outline" size={50} color="#bfc5da" />
+          <CustomText style={{ marginTop: 12, color: "#b0b0b0", fontSize: 16 }}>
+            ไม่มี{mode === 1 ? "แจ้งเตือน" : "สิ่งที่ต้องทำ"}
+          </CustomText>
+        </View>
+      ) : (
+        <FlatList
+          data={notiData}
+          keyExtractor={(item) => item.notiGroup.toString()}
+          renderItem={renderItem}
+          contentContainerStyle={{ paddingTop: 14 }}
+          showsVerticalScrollIndicator={false}
+        />
+      )}
     </CustomBackground>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#f3f4fa"},
-  header: {
-    fontSize: 22,
-    fontWeight: "700",
-    paddingTop: 48,
-    paddingBottom: 14,
-    textAlign: "center",
-    color: theme.colors.primary,
-    letterSpacing: 0.3,
-  },
   modeToggleBar: {
     flexDirection: "row",
     backgroundColor: "#e7eaf6",
