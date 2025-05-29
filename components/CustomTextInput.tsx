@@ -1,8 +1,8 @@
-import React, { memo } from "react";
-import { View, StyleSheet } from "react-native";
-import { TextInput as Input } from "react-native-paper";
-import { theme } from "@/core/theme";
 import CustomText from "@/components/CustomText";
+import { theme } from "@/core/theme";
+import React, { memo } from "react";
+import { StyleSheet, View } from "react-native";
+import { TextInput as Input } from "react-native-paper";
 
 const CustomTextInput = ({ errorText, ...props }: any) => (
   <View style={styles.container}>

@@ -1,11 +1,11 @@
-import React, { memo, useEffect } from "react";
-import { View, StyleSheet, Image } from "react-native";
-import { useRouter } from "expo-router";
-import CustomText from "@/components/CustomText";
 import App from "@/app.json";
 import CustomBackground from "@/components/CustomBackground";
-import { useSelector, useDispatch } from "react-redux";
+import CustomText from "@/components/CustomText";
 import { RootState } from "@/core/store";
+import { useRouter } from "expo-router";
+import React, { memo, useEffect } from "react";
+import { Image, StyleSheet, View } from "react-native";
+import { useSelector } from "react-redux";
 
 function IntroScreen() {
   const { isAuthenticated, isLoaded, pin } = useSelector(
@@ -36,7 +36,7 @@ function IntroScreen() {
       <View>
         <Image
           resizeMode="contain"
-          source={require("../assets/images/main.png")}
+          source={require("../assets/images/thasala-main.png")}
           style={{ height: 200 }}
         />
         {/* <CustomText bold style={styles.title}>

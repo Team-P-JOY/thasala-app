@@ -60,7 +60,7 @@ const INITIAL_MENU = [
     key: 8,
     label: "ประกาศ",
     icon: "megaphone-outline",
-    route: "/home",
+    route: "/announce",
     show: true,
   },
   {
