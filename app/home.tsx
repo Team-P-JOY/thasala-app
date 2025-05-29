@@ -1,23 +1,25 @@
-import {
-  Image,
-  ScrollView,
-  StyleSheet,
-  RefreshControl,
-  View,
-} from "react-native";
-import React, { useState } from "react";
 import CustomBackground from "@/components/CustomBackground";
-import { theme } from "@/core/theme";
-import { Appbar, Avatar } from "react-native-paper";
-import { RootState } from "@/core/store";
-import { useSelector } from "react-redux";
 import CustomFooterBar from "@/components/CustomFooterBar";
-import NewsFeed from "@/components/content/NewsFeed";
 import Announce from "@/components/content/Announce";
 import MenuContent from "@/components/content/MenuContent";
+import NewsFeed from "@/components/content/NewsFeed";
 import PotalProgram from "@/components/content/PotalProgram";
+import { RootState } from "@/core/store";
+import { theme } from "@/core/theme";
+import { useRouter } from "expo-router";
+import React, { useState } from "react";
+import {
+  Image,
+  RefreshControl,
+  ScrollView,
+  StyleSheet,
+  View,
+} from "react-native";
+import { Appbar, Avatar } from "react-native-paper";
+import { useSelector } from "react-redux";
 
 const home = () => {
+  const router = useRouter();
   const { user } = useSelector((state: RootState) => state.auth);
   const [refreshing, setRefreshing] = useState(false);
   const onRefresh = () => {
@@ -36,7 +38,10 @@ const home = () => {
             resizeMode="contain"
           />
         </View>
-        <Appbar.Action icon="qrcode" color={theme.colors.primary} size={30} />
+        {/* <Appbar.Action icon="qrcode" color={theme.colors.primary} size={30} /> */}
+        <Appbar.Action icon="bell-outline" color={theme.colors.primary} size={30} onPress={() => router.push("/noti")}
+ />
+
         <View>
           <Avatar.Image
             size={45}

@@ -77,13 +77,6 @@ const INITIAL_MENU = [
     route: "/setting",
     show: true,
   },
-  {
-    key: 11,
-    label: "แผนที่",
-    icon: "map-outline",
-    route: "/map",
-    show: true,
-  },
 ];
 
 // กำหนด State เริ่มต้น

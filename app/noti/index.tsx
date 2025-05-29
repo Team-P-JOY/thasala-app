@@ -16,15 +16,7 @@ import {
 } from "react-native";
 
 const TAB_WIDTH = (Dimensions.get('window').width - 60) / 2;
-
-// Map ชื่อกลุ่มกับ icon (หรือเปลี่ยนตรงนี้)
-const groupIcons = {
-  "เรื่องการลา": "calendar-outline",
-  "เรื่องเงินเดือน": "cash-outline",
-  "ศูนย์เทคโนโลยี": "laptop-outline",
-};
-
-const PERSON_ID = "5800000005"; // หรือเปลี่ยนเป็น dynamic ได้
+const PERSON_ID = "5800000005"; // ใส่ personid จริง หรือดึงจาก redux/auth
 
 export default function NotificationModulesScreen() {
   const router = useRouter();
@@ -68,10 +60,15 @@ export default function NotificationModulesScreen() {
     setLoading(false);
   };
 
-  const handleModulePress = (moduleId: string) => {
+  // <--- แก้ตรงนี้ให้ส่งข้อมูลที่ต้องการไปหน้าต่อไป --->
+  const handleModulePress = (notiGroup) => {
     router.push({
       pathname: "/noti/list",
-      params: { module: moduleId, mode: mode === 1 ? "notifications" : "tasks" },
+      params: {
+        personid: PERSON_ID,
+        mode: mode,
+        module: notiGroup // ส่งค่า notiGroup เพื่อให้หน้ารายการใช้ filter ได้
+      }
     });
   };
 
@@ -87,7 +84,13 @@ export default function NotificationModulesScreen() {
     >
       <View style={styles.iconCol}>
         <Ionicons
-          name={groupIcons[item.notiGroupName] || "notifications-outline"}
+          name={
+            // เพิ่มไอคอน mapping ตามชื่อ ถ้าต้องการ
+            item.notiGroupName === "เรื่องการลา" ? "calendar-outline" :
+            item.notiGroupName === "เรื่องเงินเดือน" ? "cash-outline" :
+            item.notiGroupName === "ศูนย์เทคโนโลยี" ? "laptop-outline" :
+            "notifications-outline"
+          }
           size={30}
           color={theme.colors.primary}
         />
@@ -216,7 +219,7 @@ const styles = StyleSheet.create({
     position: "absolute",
     width: TAB_WIDTH,
     height: "90%",
-    backgroundColor: "#fffbe6",
+    backgroundColor: "#fff",
     borderRadius: 20,
     top: 2,
     left: 2,
@@ -244,8 +247,6 @@ const styles = StyleSheet.create({
   tabButtonTextActive: {
     color: theme.colors.primary,
   },
-
-  // Full row style (No card)
   row: {
     flexDirection: "row",
     alignItems: "center",
