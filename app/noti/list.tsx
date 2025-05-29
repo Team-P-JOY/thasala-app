@@ -1,10 +1,14 @@
+import CustomBackground from "@/components/CustomBackground";
+import CustomText from "@/components/CustomText";
+import CustomTopBar from "@/components/CustomTopBar";
+import { theme } from "@/core/theme";
+import { Ionicons } from "@expo/vector-icons";
 import { useLocalSearchParams } from "expo-router";
 import React from "react";
 import {
   FlatList,
   StyleSheet,
-  Text,
-  View,
+  View
 } from "react-native";
 
 const mockData = {
@@ -36,86 +40,142 @@ export default function NotificationListScreen() {
   const { module, mode } = useLocalSearchParams();
   const items = mockData[mode as "notifications" | "tasks"]?.[module as string] || [];
 
-  const renderItem = ({ item }) => (
-    <View style={styles.card}>
-      <View style={styles.dot} />
-      <View style={styles.itemContent}>
-        <Text style={styles.itemTitle}>{item.title}</Text>
-        <Text style={styles.itemDesc}>{item.description}</Text>
-        <Text style={styles.itemTime}>{item.time}</Text>
+  const renderItem = ({ item, index }) => (
+    <View
+      style={[
+        styles.row,
+        index % 2 === 1 && styles.rowAlt,
+        index === 0 && { borderTopWidth: 0 },
+      ]}
+    >
+      <View style={styles.dotCol}>
+        <View
+          style={[
+            styles.dot,
+            { backgroundColor: index % 2 === 0 ? theme.colors.primary : "#FFD600" }
+          ]}
+        />
+      </View>
+      <View style={styles.textCol}>
+        <CustomText bold style={styles.itemTitle}>{item.title}</CustomText>
+        <CustomText style={styles.itemDesc}>{item.description}</CustomText>
+      </View>
+      <View style={styles.timeCol}>
+        <Ionicons name="time-outline" size={14} color="#FF9500" style={{ marginBottom: 1 }} />
+        <CustomText style={styles.itemTime}>{item.time}</CustomText>
       </View>
     </View>
   );
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.header}>รายการ{mode === "notifications" ? "แจ้งเตือน" : "สิ่งที่ต้องทำ"}</Text>
+    <CustomBackground>
+            <CustomTopBar title={mode === 'notifications' ? "แจ้งเตือน" : "สิ่งที่ต้องทำ"} />
+
       {items.length === 0 ? (
-        <Text style={styles.empty}>ไม่มีรายการ</Text>
+        <View style={styles.emptyWrap}>
+          <Ionicons name="cloud-outline" size={60} color="#bfc5da" style={{ marginBottom: 10 }} />
+          <CustomText bold style={styles.empty}>ไม่มีรายการ </CustomText>
+        </View>
       ) : (
         <FlatList
           data={items}
-          keyExtractor={(item, index) => index.toString()}
+          keyExtractor={(_, index) => index.toString()}
           renderItem={renderItem}
-          contentContainerStyle={{ padding: 20 }}
+          contentContainerStyle={{ paddingBottom: 32 }}
+          showsVerticalScrollIndicator={false}
         />
       )}
-    </View>
+  </CustomBackground>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#fff" },
-  header: {
-    fontSize: 22,
-    fontWeight: "bold",
-    paddingTop: 60,
-    paddingBottom: 10,
-    textAlign: "center",
-    color: "#333",
+  container: {
+    flex: 1,
+    backgroundColor: "#F3F5FA",
   },
-  card: {
+  headerWrap: {
+    paddingTop: 48,
+    paddingBottom: 12,
+    backgroundColor: "#F3F5FA",
+    alignItems: "center",
+  },
+  header: {
+    fontSize: 21,
+    fontWeight: "800",
+    color: theme.colors.primary,
+    textAlign: "center",
+    letterSpacing: 0.15,
+  },
+  headerLine: {
+    height: 3,
+    width: 55,
+    backgroundColor: theme.colors.primary,
+    marginTop: 7,
+    borderRadius: 2,
+  },
+
+  // List row style
+  row: {
     flexDirection: "row",
-    alignItems: "flex-start",
-    backgroundColor: "#f9f9f9",
-    borderRadius: 10,
-    padding: 16,
-    marginBottom: 12,
-    shadowColor: "#000",
-    shadowOpacity: 0.04,
-    shadowOffset: { width: 0, height: 1 },
-    shadowRadius: 1,
-    elevation: 1,
+    alignItems: "center",
+    paddingVertical: 18,
+    paddingHorizontal: 18,
+    borderBottomWidth: 1,
+    borderBottomColor: "#e5e8f0",
+    backgroundColor: "#fff",
+  },
+  rowAlt: {
+    backgroundColor: "#F8FAFF",
+  },
+  dotCol: {
+    width: 26,
+    alignItems: "center",
   },
   dot: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
-    backgroundColor: "#007AFF",
-    marginTop: 6,
-    marginRight: 12,
+    width: 13,
+    height: 13,
+    borderRadius: 7,
+    backgroundColor: theme.colors.primary,
+    marginRight: 4,
   },
-  itemContent: {
+  textCol: {
     flex: 1,
+    justifyContent: "center",
   },
   itemTitle: {
-    fontSize: 16,
-    fontWeight: "bold",
-    marginBottom: 4,
+    fontSize: 16.5,
+    color: theme.colors.primary,
+    marginBottom: 3,
+    letterSpacing: 0.02,
   },
   itemDesc: {
-    fontSize: 14,
-    color: "#555",
+    fontSize: 14.5,
+    color: "#6a7693",
+    fontWeight: "500",
+  },
+  timeCol: {
+    minWidth: 72,
+    alignItems: "flex-end",
+    justifyContent: "center",
+    marginLeft: 12,
   },
   itemTime: {
-    fontSize: 12,
-    color: "#999",
-    marginTop: 4,
+    fontSize: 12.5,
+    color: "#FF9500",
+    fontWeight: "600",
+    marginTop: 2,
+    textAlign: "right",
+  },
+  emptyWrap: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    paddingBottom: 120,
   },
   empty: {
     textAlign: "center",
-    fontSize: 16,
-    marginTop: 40,
-    color: "#999",
+    fontSize: 18,
+    color: "#bfc5da",
   },
 });
