@@ -16,7 +16,7 @@ const index = () => {
   };
   return (
     <CustomBackground>
-      <CustomTopBar title="ประกาศ" back={() => router.replace("/setting")} />
+      <CustomTopBar title="ประกาศ" back={() => router.replace("/home")} />
       <ScrollView
         contentContainerStyle={{ flexGrow: 1 }}
         refreshControl={
