@@ -465,6 +465,7 @@ const CheckInScreen = () => {
                                 alignItems: "center",
                                 paddingVertical: 2,
                                 justifyContent: "space-between",
+                                gap: 5,
                               }}
                             >
                               <CustomText
@@ -474,7 +475,7 @@ const CheckInScreen = () => {
                                     row.checktype === "1"
                                       ? "#079455"
                                       : "#d92d20",
-                                  paddingHorizontal: 5,
+                                  paddingLeft: 10,
                                   fontSize: 12,
                                 }}
                               >
@@ -484,7 +485,7 @@ const CheckInScreen = () => {
                               <View
                                 style={{
                                   alignItems: "flex-end",
-                                  paddingHorizontal: 5,
+                                  paddingRight: 10,
                                 }}
                               >
                                 <CustomText

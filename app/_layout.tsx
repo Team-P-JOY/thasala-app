@@ -69,13 +69,15 @@ function AppContent() {
           <Stack.Screen name="news" options={{ headerShown: false }} />
           <Stack.Screen name="scan" options={{ headerShown: false }} />
           <Stack.Screen name="profile" options={{ headerShown: false }} />
-                    <Stack.Screen name="noti" options={{ headerShown: false }} />
+          <Stack.Screen name="noti" options={{ headerShown: false }} />
 
           <Stack.Screen name="setting" options={{ headerShown: false }} />
           <Stack.Screen name="checkin" options={{ headerShown: false }} />
 
           <Stack.Screen name="portal" options={{ headerShown: false }} />
           <Stack.Screen name="tal" options={{ headerShown: false }} />
+
+          <Stack.Screen name="announce" options={{ headerShown: false }} />
           <Stack.Screen name="+not-found" options={{ headerShown: false }} />
         </Stack>
         <StatusBar style="auto" />
