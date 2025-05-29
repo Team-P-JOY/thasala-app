@@ -1,6 +1,7 @@
 import CustomBackground from "@/components/CustomBackground";
 import CustomText from "@/components/CustomText";
 import CustomTopBar from "@/components/CustomTopBar";
+import { RootState } from "@/core/store";
 import { theme } from "@/core/theme";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
@@ -14,18 +15,19 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { useSelector } from "react-redux";
 
 const TAB_WIDTH = (Dimensions.get('window').width - 60) / 2;
-const PERSON_ID = "5800000005"; // ใส่ personid จริง หรือดึงจาก redux/auth
 
 export default function NotificationModulesScreen() {
   const router = useRouter();
   const [mode, setMode] = useState<1 | 2>(1); // 1 = notifications, 2 = tasks
   const anim = useRef(new Animated.Value(0)).current;
-
+  const { user } = useSelector((state: RootState) => state.auth);
   const [loading, setLoading] = useState(false);
   const [notiData, setNotiData] = useState<any[]>([]);
   const [error, setError] = useState("");
+const PERSON_ID = user.person_id || "0"; // ใช้ค่า personId จาก Redux store หรือค่าเริ่มต้น
 
   useEffect(() => {
     Animated.timing(anim, {
