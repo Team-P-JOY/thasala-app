@@ -134,19 +134,21 @@ const index = () => {
                 formData.append("personId", user?.person_id);
                 formData.append("expoToken", expoToken ?? "");
                 formData.append("osname", osname ?? "");
-              
+
                 try {
-                  const response = await fetch("http://10.250.2.9/apis/mbl/mbl-register/deleteRegister", {
-                    method: "POST",
-                    body: formData,
-                  });
-              
+                  const response = await fetch(
+                    "http://10.250.2.9/apis/mbl/mbl-register/deleteRegister",
+                    {
+                      method: "POST",
+                      body: formData,
+                    }
+                  );
+
                   const result = await response.json();
                   if (result.code === 200) {
                     //console.error("Success:");
-                  } 
-                } 
-                catch (error) {
+                  }
+                } catch (error) {
                   // console.error("Submit Error:", error);
                   // alert("เกิดข้อผิดพลาดขณะส่งข้อมูล");
                 }
