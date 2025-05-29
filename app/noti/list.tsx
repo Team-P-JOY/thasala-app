@@ -18,9 +18,11 @@ export default function NotificationListScreen() {
     const fetchList = async () => {
       setLoading(true);
       try {
-        const url = `http://10.250.2.9/apis/mbl/mbl-notification/${personid}/${mode}/${module}/listnotification`;
+        const url = `http://10.250.2.9/apis/mbl/mbl-notification/${personid}/${module}/${mode}/viewnotification`;
+        console.log("Fetching Notification List from:", url);
         const res = await fetch(url);
         const json = await res.json();
+        console.log("Notification List Data:", json);
         setData(json.dtNotification || []);
       } catch {
         setData([]);
@@ -73,9 +75,7 @@ export default function NotificationListScreen() {
     <CustomBackground>
       <CustomTopBar title="รายการแจ้งเตือน" />
         <View style={{padding: 12, backgroundColor: "#f2f2f7"}}>
-    <CustomText style={{fontSize: 13, color: "#666"}} selectable>
-      {`API: http://10.250.2.9/apis/mbl/mbl-notification/${personid}/${mode}/${module}/listnotification`}
-    </CustomText>
+  
   </View>
 
       {loading ? (
