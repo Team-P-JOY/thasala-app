@@ -64,7 +64,7 @@ npx expo prebuild
 ### Deploy บน Expo สำหรับแชร์โปรเจค
 
 ```bash
-npx eas update --branch main --message "Deploy"
+npx eas update --branch main --message "Deploy" --runtime-version 1.0.0
 ```
 
 ### Build Android

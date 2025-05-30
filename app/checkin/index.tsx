@@ -5,6 +5,7 @@ import { RootState } from "@/core/store";
 import { theme } from "@/core/theme";
 import { Ionicons } from "@expo/vector-icons";
 import { useFocusEffect } from "@react-navigation/native";
+import { Audio } from "expo-av";
 import { Camera, CameraView } from "expo-camera";
 import { LinearGradient } from "expo-linear-gradient";
 import * as Location from "expo-location";
@@ -90,6 +91,11 @@ const CheckInScreen = () => {
       if (result.code === 200) {
         // ToastAndroid.show("บันทึกสำเร็จ", ToastAndroid.SHORT);
         showModal();
+        if (status === 2 || status === 92) {
+          await playSound(require("@/assets/sounds/in.m4a"));
+        } else {
+          await playSound(require("@/assets/sounds/out.m4a"));
+        }
       } else {
         alert("บันทึกล้มเหลว: " + JSON.stringify(result));
       }
@@ -99,6 +105,19 @@ const CheckInScreen = () => {
       console.error("Submit Error:", error);
       alert("เกิดข้อผิดพลาดขณะส่งข้อมูล");
     }
+  };
+
+  const playSound = async (path: any) => {
+    setTimeout(async () => {
+      const { sound } = await Audio.Sound.createAsync(path);
+      await sound.playAsync();
+
+      sound.setOnPlaybackStatusUpdate((status) => {
+        if (status.didJustFinish) {
+          sound.unloadAsync();
+        }
+      });
+    }, 2000);
   };
 
   async function _callHistory() {
@@ -256,10 +275,14 @@ const CheckInScreen = () => {
 
   const takePicture = async () => {
     if (cameraRef.current) {
-      const photo = await cameraRef.current.takePictureAsync();
+      const options = {
+        skipProcessing: true,
+      };
+      const photo = await cameraRef.current.takePictureAsync(options);
       setPhoto(photo.uri);
     }
   };
+  // playSound is disabled (no sound)
 
   const switchCamera = () => {
     setCameraType((prevType) => (prevType === "back" ? "front" : "back"));

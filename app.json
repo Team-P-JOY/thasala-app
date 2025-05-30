@@ -2,6 +2,9 @@
   "expo": {
     "name": "WU Thasala",
     "slug": "thasala-app",
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/thasala-logo.png",
@@ -25,7 +28,8 @@
         "googleMaps": {
           "apiKey": "AIzaSyD-4vX0x1g2b7k3J5a8f6c9e5g4h8d3j0M"
         }
-      }
+      },
+      "package": "com.cdtwu.thasalaapp"
     },
     "web": {
       "bundler": "metro",
@@ -85,9 +89,6 @@
       }
     },
     "owner": "cdtwu",
-    "runtimeVersion": {
-      "policy": "appVersion"
-    },
     "updates": {
       "url": "https://u.expo.dev/0f34a5e2-244b-490f-bd2e-c867050cddd0"
     }
