@@ -1,39 +1,46 @@
 import CustomText from "@/components/CustomText";
 import { theme } from "@/core/theme";
+import { useRouter } from "expo-router";
 import React from "react";
 import {
-    ScrollView,
-    StyleSheet,
-    TouchableOpacity,
-    View
+  ScrollView,
+  StyleSheet,
+  TouchableOpacity,
+  View
 } from "react-native";
 import { Avatar } from "react-native-paper";
 
 const MenuTal = () => {
+  const router = useRouter();
+
   const menu = [
     {
       name: "Dashboard",
       desc: "สถิติบันทึกการปฏิบัติงาน",
       screen: "Home",
       icon: "chart-arc",
+      route: "/tal/index",
     },
     {
-      name: "ตารางปฏิบัติงาน",
+      name: "ตารางทำงาน",
       desc: "สถานะการปฏิบัติงาน",
       screen: "Schedule",
       icon: "calendar-month",
+      route: "/tal/Schedule",
     },
     {
       name: "Timestamp",
       desc: "สแกนนิ้ว เข้า/ออก",
       screen: "Timestamp",
       icon: "calendar-clock",
+      route: "/tal/Timestamp",
     },
     {
       name: "บันทึกการลา",
       desc: "สถิติบันทึกการลา",
       screen: "Leave",
       icon: "account-arrow-right",
+      route: "/tal/Leave",
     },
   ];
 
@@ -48,9 +55,7 @@ const MenuTal = () => {
           {menu.map((m, index) => (
             <TouchableOpacity
               key={index}
-              onPress={() =>
-                console.log("Go to", m.screen)
-              }
+              onPress={() => router.push(m.route as any)}
             >
               <View style={styles.menuChild}>
                 <Avatar.Icon size={80} icon={m.icon} style={styles.avatarIcon} />

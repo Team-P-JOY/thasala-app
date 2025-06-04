@@ -43,7 +43,7 @@ export default function NotificationListScreen() {
       onPress={() => {
         // ส่ง rowNo ไปดู detail
         router.push({
-          pathname: "/noti/detail",
+          pathname: item.link,
           params: {
             personid,
             mode,
