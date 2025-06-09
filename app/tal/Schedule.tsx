@@ -111,6 +111,19 @@ const Schedule = () => {
     closeMenu();
   };
 
+  const handleSchedule = (data) => {
+    //console.log("Selected Schedule:", data.shiftId);
+    router.push({
+      pathname: "/tal/ScheduleDetail",
+      params: {
+        id: data.timeworkId,
+        personId: data.personId,
+        startDate: data.startDate, // ส่งค่า notiGroup เพื่อให้หน้ารายการใช้ filter ได้
+        shiftId: data.shiftId
+      }
+    });
+  };
+
   return (
     <CustomBackground>
       {/* Top bar session */}
@@ -182,7 +195,8 @@ const Schedule = () => {
                     </View>
                   )}
                   style={styles.listShift}
-                  onPress={() => console.log("Pressed item", row)}
+                  onPress={() => handleSchedule(row)}
+                  // onPress={() => console.log("Pressed item", row)}
                 />
                 <Divider />
               </View>
