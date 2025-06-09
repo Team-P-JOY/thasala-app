@@ -1,13 +1,70 @@
 import CustomBackground from "@/components/CustomBackground";
 import CustomFooterBar from "@/components/CustomFooterBar";
+import CustomText from "@/components/CustomText";
 import CustomTopBar from "@/components/CustomTopBar";
-import { theme } from "@/core/theme";
 import { useRouter } from "expo-router";
-import React from "react";
-import { StyleSheet } from "react-native";
+import React, { useEffect, useState } from "react";
+import { Image, StyleSheet, View } from "react-native";
+import { Dropdown } from 'react-native-element-dropdown';
 
 const router = useRouter();
+
+const data = [
+    {label: 'มานิต', value: '1'},
+    {label: 'ณัฐดนัย', value: '2'},
+    {label: 'ฮากิม', value: '3'},
+    {label: 'Item 4', value: '4'},
+    {label: 'Item 5', value: '5'},
+    {label: 'Item 6', value: '6'},
+    {label: 'Item 7', value: '7'},
+    {label: 'Item 8', value: '8'},
+];
+
 const LeaveForm = () => {
+  // const [data, setData] = useState([]);// ข้อมูลการลงเวลางาน
+  const [loading, setLoading] = useState(true);
+  const [value, setValue] = useState(null);
+  const [isFocus, setIsFocus] = useState(false);
+
+  const _renderItem = item => {
+      return (
+      <View style={styles.item}>
+          <CustomText style={styles.textItem}>{item.label}</CustomText>
+      </View>
+      );
+  };
+
+  // const _renderItem = item => {
+  //     return (
+  //     <View style={styles.item}>
+  //         <CustomText style={styles.textItem}>{item.timeCheckin}</CustomText>
+  //     </View>
+  //     );
+  // };
+  
+  useEffect(() => {
+    if (loading == true) {
+      //initSelectMonth();
+      fetch(
+        `https://apisprd.wu.ac.th/tal/tal-timework/get-schedule-detail?personId=6500000061&date=2025-06-05&shiftId=304`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      )
+        .then((response) => response.json())
+        .then((data) => {
+          //console.log(data);
+          if (data.code === 200) {
+            //setData(data.dtTimestamp);
+            setLoading(false);
+          }
+        });
+    }
+  }, [loading]);
+
   return (
     <CustomBackground>
       {/* Top bar session */}
@@ -16,7 +73,32 @@ const LeaveForm = () => {
         back={() => router.push("/tal/Leave")}
       />
 
-      
+      <View style={styles.container}>
+        <Dropdown
+            style={[styles.dropdown, isFocus && { borderColor: 'blue' }]}
+            placeholderStyle={styles.placeholderStyle}
+            selectedTextStyle={styles.selectedTextStyle}
+            data={data}
+            search
+            maxHeight={300}
+            searchPlaceholder="Search..."
+            labelField="label"
+            valueField="value"
+            placeholder={isFocus ? '...' : 'กรุณาเลือกชื่อ'}
+            value={value}
+            onFocus={() => setIsFocus(true)}
+            onBlur={() => setIsFocus(false)}
+            onChange={item => {
+              setValue(item.value);
+              setIsFocus(false);
+              console.log('selected', item.value);
+            }}
+            renderLeftIcon={() => (
+                <Image style={styles.icon} source={require('../../assets/images/camera.png')} />
+            )}
+            renderItem={item => _renderItem(item)}
+        />
+      </View>
       
       {/* Footer session */}
       <CustomFooterBar />
@@ -28,91 +110,35 @@ export default LeaveForm
 
 const styles = StyleSheet.create({
   container: {
-    // marginTop: 0,
-    padding: 15,
+      flex: 1,
+      backgroundColor: 'white',
+      padding: 16,
+      alignContent: 'center',
   },
-  title: {
-    marginBottom: 20,
+  dropdown: {
+    height: 50,
+    borderColor: 'gray',
+    borderWidth: 0.5,
+    borderRadius: 8,
+    paddingHorizontal: 8,
+    marginBottom: 10
   },
-  profileContainer: {
-    alignItems: "center",
-    padding: 10,
+  placeholderStyle: {
+    color: 'gray',
   },
-  profileImage: {
-    width: 90,
-    height: 90,
-    borderRadius: 40,
+  icon: {
+      marginRight: 5,
+      width: 18,
+      height: 18,
   },
-
-  profileName: {
-    fontSize: 20,
-    color: theme.colors.primary,
+  item: {
+      paddingVertical: 17,
+      paddingHorizontal: 4,
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
   },
-  roleName: {
-    color: theme.colors.primary,
+  selectedTextStyle: {
+      color: 'black',
   },
-  token: {
-    fontSize: 8,
-    // alignSelf: "flex-end",
-    alignItems: "center",
-    marginTop: 5,
-    color: "gray",
-  },
-  scrollView: {
-    padding: 10, 
-    height: "auto", 
-    // backgroundColor: "#000",
-    // flexGrow: 1
-  },
-  menuContainer: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    justifyContent: "space-between",
-    //paddingHorizontal: 10,
-    //backgroundColor: "#ff0000",
-  },
-  menuChild:{
-    alignItems: "center", 
-    width: 100, 
-    //height: 100, 
-    // borderRightColor: "#0000ff",
-    // borderRightWidth:2,
-  },
-  avatarIcon: {
-    backgroundColor: "#C3A7F4",
-    borderWidth: 1,
-    borderColor: "#ccc",
-  },
-  labelDate: {
-    color: "gray",
-    fontSize: 14,
-  },
-  textStatus: {
-    textAlign: "center",
-    color: "gray",
-  },
-  textLastUpdate: {
-    color: "lightgray",
-    fontSize: 12,
-    textAlign: "right",
-    marginTop:10
-  },
-  containnerTitle: {
-    flexDirection: "row",
-    marginTop: 10,
-    backgroundColor: "#FF8C00",
-    padding: 10
-  },
-  textName: {
-    fontSize: 18,
-    color: "#696969"
-  },
-  textWorkTotal:{
-    color: "#FF8C00",
-    fontWeight: "bold",
-  },
-  textWork1: {
-    color: "#000",
-    fontWeight: "bold",
-  }
 });
