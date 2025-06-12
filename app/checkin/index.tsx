@@ -5,11 +5,11 @@ import { RootState } from "@/core/store";
 import { theme } from "@/core/theme";
 import { Ionicons } from "@expo/vector-icons";
 import { useFocusEffect } from "@react-navigation/native";
-import { Audio } from "expo-av";
 import { Camera, CameraView } from "expo-camera";
 import { LinearGradient } from "expo-linear-gradient";
 import * as Location from "expo-location";
 import { useRouter } from "expo-router";
+import * as Speech from "expo-speech";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
@@ -92,9 +92,23 @@ const CheckInScreen = () => {
         // ToastAndroid.show("บันทึกสำเร็จ", ToastAndroid.SHORT);
         showModal();
         if (status === 2 || status === 92) {
-          await playSound(require("@/assets/sounds/in.m4a"));
+          // await playSound(require("@/assets/sounds/in.m4a"));
+          await playSound(
+            "บันทึกเวลาเข้างานสำเร็จ เวลา " +
+              currentTime.getHours() +
+              " นาฬิกา " +
+              currentTime.getMinutes() +
+              " นาที"
+          );
         } else {
-          await playSound(require("@/assets/sounds/out.m4a"));
+          // await playSound(require("@/assets/sounds/out.m4a"));
+          await playSound(
+            "บันทึกเวลาออกงานสำเร็จ เวลา " +
+              currentTime.getHours() +
+              " นาฬิกา " +
+              currentTime.getMinutes() +
+              " นาที"
+          );
         }
       } else {
         alert("บันทึกล้มเหลว: " + JSON.stringify(result));
@@ -107,17 +121,19 @@ const CheckInScreen = () => {
     }
   };
 
-  const playSound = async (path: any) => {
+  const playSound = async (text: string) => {
     setTimeout(async () => {
-      const { sound } = await Audio.Sound.createAsync(path);
-      await sound.playAsync();
+      // const { sound } = await Audio.Sound.createAsync(path);
+      // await sound.playAsync();
 
-      sound.setOnPlaybackStatusUpdate((status) => {
-        if (status.didJustFinish) {
-          sound.unloadAsync();
-        }
-      });
-    }, 2000);
+      // sound.setOnPlaybackStatusUpdate((status) => {
+      //   if (status.didJustFinish) {
+      //     sound.unloadAsync();
+      //   }
+      // });
+
+      Speech.speak(text);
+    }, 1000);
   };
 
   async function _callHistory() {
@@ -282,7 +298,6 @@ const CheckInScreen = () => {
       setPhoto(photo.uri);
     }
   };
-  // playSound is disabled (no sound)
 
   const switchCamera = () => {
     setCameraType((prevType) => (prevType === "back" ? "front" : "back"));

@@ -67,16 +67,23 @@ npx expo prebuild
 npx eas update --branch main --message "Deploy" --runtime-version 1.0.0
 ```
 
-### Build Android
+### Build Android (APK)
 
 ```bash
 npx eas build --platform android --profile preview
 ```
 
+### Build Android (AAB)
+
+```bash
+npx eas build --platform android --profile production
+```
+
 ### Build IOS
 
 ```bash
-npx eas build --platform ios --profile ios-simulator
+npx eas credentials -p ios
+npx eas build --platform ios --profile production
 ```
 
 ## 👨‍💻 **ทีมพัฒนา (Development Team)**
