@@ -7,14 +7,15 @@ import { theme } from "@/core/theme";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
-import { ActivityIndicator, ScrollView, StyleSheet, View } from "react-native";
-import { Avatar, Card, Divider, List, Text } from "react-native-paper";
+import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from "react-native";
+import { Avatar, Card, Divider, List } from "react-native-paper";
 import { useSelector } from "react-redux";
 import MenuTal from "./MenuTal";
 
 const router = useRouter();
 const index = () => {
   const [refreshing, setRefreshing] = useState(false);
+  const [mode, setMode] = useState(1); // 1 = Dashboard, 2 = ตารางปฏิบัติงาน, 3 = Timestamp, 4 = บันทึกการลา
   const { user } = useSelector((state: RootState) => state.auth);
   const [fiscalYear, setFiscalYear] = useState(2568); //ปีงบประมาณ
   const onRefresh = () => {
@@ -23,33 +24,6 @@ const index = () => {
       setRefreshing(false);
     }, 2000);
   };
-
-  // const menu = [
-  //   {
-  //     name: "Dashboard",
-  //     desc: "สถิติบันทึกการปฏิบัติงาน",
-  //     screen: "Home",
-  //     icon: "chart-arc",
-  //   },
-  //   {
-  //     name: "ตารางปฏิบัติงาน",
-  //     desc: "สถานะการปฏิบัติงาน",
-  //     screen: "Schedule",
-  //     icon: "calendar-month",
-  //   },
-  //   {
-  //     name: "Timestamp",
-  //     desc: "สแกนนิ้ว เข้า/ออก",
-  //     screen: "Timestamp",
-  //     icon: "calendar-clock",
-  //   },
-  //   {
-  //     name: "บันทึกการลา",
-  //     desc: "สถิติบันทึกการลา",
-  //     screen: "Leave",
-  //     icon: "account-arrow-right",
-  //   },
-  // ];
 
   let curDate = new Date();
   let curMonth = curDate.getMonth() + 1;
@@ -120,7 +94,6 @@ const index = () => {
       )
       .then((response) => response.json())
       .then((data) => {
-        console.log(data);
         if (data.code === 200) {
           setLastUpdate(data.lastUpdate);
           let workTotal = 0; // วันทำการ
@@ -189,11 +162,11 @@ const index = () => {
               <Card.Content>
                 <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
                   <CustomText bold style={{ fontSize: 18, color: theme.colors.primary }}>จำนวนวันทำการ</CustomText>
-                  <Text variant="titleLarge"  style={styles.textWorkTotal}>{workTotal}</Text>
+                  <CustomText bold style={styles.textWorkTotal}>{workTotal}</CustomText>
                 </View>
                 <View style={{ flexDirection: "row", justifyContent: "space-between", marginTop: 10 }}>
                   <CustomText bold style={{ fontSize: 18, color: theme.colors.primary }}>จำนวนวันทำงาน</CustomText>
-                  <Text variant="bodyMedium" style={styles.textWork1}>{work1}</Text>
+                  <CustomText bold style={styles.textWork1}>{work1}</CustomText>
                 </View>
                 
                 {/* <Text variant="bodyMedium">{user && <Text>{user.person_id}</Text>}</Text> */}
