@@ -1,5 +1,4 @@
 import CustomBackground from "@/components/CustomBackground";
-import CustomFooterBar from "@/components/CustomFooterBar";
 import CustomText from "@/components/CustomText";
 import CustomTopBar from "@/components/CustomTopBar";
 import { RootState } from "@/core/store";
@@ -204,9 +203,6 @@ const Schedule = () => {
           </List.Section>
         )}
       </ScrollView>
-
-      {/* Footer session */}
-      <CustomFooterBar />
     </CustomBackground>
   )
 }

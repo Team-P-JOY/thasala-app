@@ -19,7 +19,7 @@ const MenuTal = () => {
       desc: "สถิติบันทึกการปฏิบัติงาน",
       screen: "Home",
       icon: "chart-arc",
-      route: "/tal/index",
+      route: "/tal",
     },
     {
       name: "ตารางทำงาน",
@@ -55,7 +55,7 @@ const MenuTal = () => {
           {menu.map((m, index) => (
             <TouchableOpacity
               key={index}
-              onPress={() => router.push(m.route as any)}
+              onPress={() =>{console.log(m.route);router.push(m.route as any);} }
             >
               <View style={styles.menuChild}>
                 <Avatar.Icon size={80} icon={m.icon} style={styles.avatarIcon} />

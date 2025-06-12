@@ -1,5 +1,4 @@
 import CustomBackground from "@/components/CustomBackground";
-import CustomFooterBar from "@/components/CustomFooterBar";
 import CustomText from "@/components/CustomText";
 import CustomTopBar from "@/components/CustomTopBar";
 import { useRouter } from "expo-router";
@@ -99,9 +98,6 @@ const LeaveForm = () => {
             renderItem={item => _renderItem(item)}
         />
       </View>
-      
-      {/* Footer session */}
-      <CustomFooterBar />
     </CustomBackground>
   )
 }

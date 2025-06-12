@@ -1,5 +1,4 @@
 import CustomBackground from "@/components/CustomBackground";
-import CustomFooterBar from "@/components/CustomFooterBar";
 import CustomTopBar from "@/components/CustomTopBar";
 import { theme } from "@/core/theme";
 import { useRouter } from "expo-router";
@@ -13,13 +12,11 @@ const LeaveSubstitute = () => {
       {/* Top bar session */}
       <CustomTopBar 
         title="รับมอบงาน" 
-        back={() => router.push("../noti/index")}
+        back={() => router.back()}
       />
 
       
-      
-      {/* Footer session */}
-      <CustomFooterBar />
+    
     </CustomBackground>
   )
 }

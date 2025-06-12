@@ -1,5 +1,4 @@
 import CustomBackground from "@/components/CustomBackground";
-import CustomFooterBar from "@/components/CustomFooterBar";
 import CustomText from "@/components/CustomText";
 import CustomTopBar from "@/components/CustomTopBar";
 import { RootState } from "@/core/store";
@@ -213,9 +212,6 @@ const index = () => {
           </View>
         )}
       </ScrollView>
-      
-      {/* Footer session */}
-      <CustomFooterBar />
     </CustomBackground>
   );
 };
