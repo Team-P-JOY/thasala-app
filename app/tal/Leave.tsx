@@ -1,40 +1,122 @@
 import CustomBackground from "@/components/CustomBackground";
+import CustomText from "@/components/CustomText";
 import CustomTopBar from "@/components/CustomTopBar";
+import { RootState } from "@/core/store";
 import { theme } from "@/core/theme";
+import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import React from "react";
-import { StyleSheet } from "react-native";
-import { FAB, PaperProvider, Portal } from 'react-native-paper';
+import React, { useEffect, useState } from "react";
+import { ScrollView, StyleSheet, TouchableOpacity, View } from "react-native";
+import { Card, FAB } from 'react-native-paper';
+import { useSelector } from "react-redux";
 import MenuTal from "./MenuTal";
 
 const router = useRouter();
+
 const Leave = () => {
+  const { user } = useSelector((state: RootState) => state.auth);
+  const [loading, setLoading] = useState(true);
+  const [leavetype, setLeavetype] = useState([]);// สถิติการลา
   const [state, setState] = React.useState({ open: false });
   const onStateChange = ({ open }) => setState({ open });
   const { open } = state;
+
+  let curDate = new Date();
+  let curMonth = curDate.getMonth() + 1;
+  let curYear = curDate.getFullYear() + 543;
+  let fiscalYear = curMonth < 10 ? curYear : curYear + 1;
+
+  useEffect(() => {
+    if (loading == true) {
+      //initSelectMonth();
+      fetch(
+        `https://apisprd.wu.ac.th/tal/tal-leave-reg/${user.person_id}/${fiscalYear}/showLeavecumulative`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      )
+        .then((response) => response.json())
+        .then((data) => {
+          if (data.code === 200) {
+            console.log(data.dtLeavecumulative);
+            setLeavetype(data.dtLeavecumulative);
+            setLoading(false);
+          }
+        });
+    }
+  }, [loading]);
+
   return (
     <CustomBackground>
       {/* Top bar session */}
       <CustomTopBar 
-        title="บันทึกการลา" 
+        title={`บันทึกการลาปีงบประมาณ ${fiscalYear}`}
         back={() => router.push("/home")}
       />
 
       {/* Menu session */}
       <MenuTal />
 
-      <PaperProvider>
-        <Portal>
-            <FAB.Group
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        style={styles.scrollView}
+      >
+        <View style={styles.menuContainer}>
+          {leavetype.map((m, index) => (
+            <Card
+              key={index}
+              style={{
+                marginRight: 10,
+                width: 230,
+                backgroundColor: theme.colors.primary,
+              }}
+            >
+              <Card.Content>
+                <TouchableOpacity key={index}>
+                  <CustomText bold numberOfLines={1} ellipsizeMode="tail" style={{ color: "white", fontSize: 18 }}>{m.leaveName}</CustomText>
+                  <View
+                    style={{
+                      flexDirection: "row",
+                      alignItems: "center",
+                    }}
+                  >
+                    <Ionicons
+                      name="analytics-sharp"
+                      size={15}
+                      color={"#cedd7a"}
+                      style={{ marginRight: 2, marginTop: 10 }}
+                    />
+                    <CustomText style={styles.textUseday}> ใช้ไป {m.useday} วัน | {m.qty} ครั้ง</CustomText>
+                  </View>
+                </TouchableOpacity>
+              </Card.Content>
+            </Card>
+          ))}
+        </View>
+        
+      </ScrollView>
+
+      {/* <PaperProvider>
+        <Portal> */}
+          <FAB.Group
             open={open}
             visible
             icon={open ? 'close' : 'plus'}
             actions={[
-                {
+              {
                 icon: 'shape-square-rounded-plus',
                 label: 'สร้างใบลา',
                 onPress: () => router.push("/tal/LeaveForm"),
-                },
+              },
+              {
+                icon: 'calendar-today',
+                label: 'ปีงบประมาณ',
+                onPress: () => console.log('Pressed email'),
+              },
             ]}
             onStateChange={onStateChange}
             onPress={() => {
@@ -42,9 +124,9 @@ const Leave = () => {
                 // do something if the speed dial is open
                 }
             }}
-            />
-        </Portal>
-      </PaperProvider>
+          />
+        {/* </Portal>
+      </PaperProvider> */}
     </CustomBackground>
   )
 }
@@ -55,6 +137,16 @@ const styles = StyleSheet.create({
   container: {
     // marginTop: 0,
     padding: 15,
+  },
+  scrollView: {
+    padding: 10, 
+    height: "auto", 
+    // backgroundColor: "#000",
+    // flexGrow: 1
+  },
+  textUseday: {
+    color: "#FA8072",
+    marginTop: 10
   },
   title: {
     marginBottom: 20,
@@ -82,12 +174,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginTop: 5,
     color: "gray",
-  },
-  scrollView: {
-    padding: 10, 
-    height: "auto", 
-    // backgroundColor: "#000",
-    // flexGrow: 1
   },
   menuContainer: {
     flexDirection: "row",
