@@ -1,5 +1,4 @@
 import CustomBackground from "@/components/CustomBackground";
-import CustomFooterBar from "@/components/CustomFooterBar";
 import CustomTopBar from "@/components/CustomTopBar";
 import { theme } from "@/core/theme";
 import { useRouter } from "expo-router";
@@ -19,8 +18,6 @@ const Timestamp = () => {
       {/* Menu session */}
       <MenuTal />
       
-      {/* Footer session */}
-      <CustomFooterBar />
     </CustomBackground>
   )
 }
