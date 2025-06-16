@@ -1,10 +1,10 @@
-import { ScrollView, StyleSheet, RefreshControl } from "react-native";
-import React, { useState } from "react";
 import CustomBackground from "@/components/CustomBackground";
 import CustomTopBar from "@/components/CustomTopBar";
 import WebPortal from "@/components/WebPortal";
-import { useRouter } from "expo-router";
 import { RootState } from "@/core/store";
+import { useRouter } from "expo-router";
+import React, { useState } from "react";
+import { RefreshControl, ScrollView, StyleSheet } from "react-native";
 import { useSelector } from "react-redux";
 
 const index = () => {
@@ -18,7 +18,7 @@ const index = () => {
     }, 2000);
   };
 
-  const url = "https://e-jpas.wu.ac.th/mobile.php?personid=" + user?.personid;
+  const url = "https://e-jpas.wu.ac.th/mobile.php?personid=" + user?.person_id;
   return (
     <CustomBackground>
       <CustomTopBar title="สวัสดิการ" back={() => router.push("/home")} />

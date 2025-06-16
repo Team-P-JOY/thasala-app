@@ -4,6 +4,7 @@ const theme = {
   colors: {
     ...DefaultTheme.colors,
     primary: "#804A9B",
+    second: "#FF893A",
     outline: "#ddd",
     surfaceVariant: "white",
   },

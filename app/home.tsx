@@ -1,9 +1,9 @@
 import CustomBackground from "@/components/CustomBackground";
 import CustomFooterBar from "@/components/CustomFooterBar";
+import Activity from "@/components/content/Activity";
 import Announce from "@/components/content/Announce";
 import MenuContent from "@/components/content/MenuContent";
 import NewsFeed from "@/components/content/NewsFeed";
-import PotalProgram from "@/components/content/PotalProgram";
 import { RootState } from "@/core/store";
 import { theme } from "@/core/theme";
 import { useRouter } from "expo-router";
@@ -64,7 +64,8 @@ const home = () => {
         <NewsFeed />
         <Announce />
         <MenuContent />
-        <PotalProgram />
+        {/* <PotalProgram /> */}
+        <Activity />
       </ScrollView>
 
       <CustomFooterBar />
