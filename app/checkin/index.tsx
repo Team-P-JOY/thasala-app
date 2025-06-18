@@ -77,6 +77,8 @@ const CheckInScreen = () => {
     formData.append("distance", locationStatus.distance.toString());
     formData.append("radius", "60");
     formData.append("remark", locationStatus.status !== 1 ? reason : "");
+    //formData.append("photo", photo ? photo : "");
+    
 
     try {
       const response = await fetch(
