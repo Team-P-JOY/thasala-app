@@ -60,7 +60,7 @@ const CheckInScreen = () => {
   const showModal = () => setVisible(true);
   const hideModal = () => setVisible(false);
 
-  const submitCheckinStatus = async (status: number) => {
+  const submitCheckinStatus = async (status: number, photoUri: string | null = photo) => {
     const formData = new FormData();
     formData.append("personId", user.person_id.toString());
     formData.append("status", status.toString());
@@ -74,20 +74,36 @@ const CheckInScreen = () => {
     );
     formData.append("device", Platform.OS);
     formData.append("unitId", locationStatus.unitId?.toString() ?? "1");
-    formData.append("distance", locationStatus.distance.toString());
+    formData.append("distance", locationStatus.distance.toFixed(2));
     formData.append("radius", "60");
-    formData.append("remark", locationStatus.status !== 1 ? reason : "");
-    formData.append("photo", photo ? photo : "");
-    formData.append("gps", 3 );
-
+    formData.append("remark", locationStatus.status !== 1 ? reason : "");    console.log("Photo URI:", photoUri);
+    
+    // Add photo as a file if available
+    if (photoUri) {
+      const filename = photoUri.split('/').pop() || 'photo.jpg';
+      const match = /\.(\w+)$/.exec(filename);
+      const type = match ? `image/${match[1]}` : 'image/jpeg';
+      
+      formData.append('photo', {
+        uri: photoUri,
+        name: filename,
+        type
+      } as any);
+    } else {
+      formData.append("photo", "");
+    }
+    
+    formData.append("gps", "3");
+    console.log("formData:", formData);
     try {
       const response = await fetch(
-        "https://apisprod.wu.ac.th/tal/tal-timework/timestamp",
+        "https://apisprd.wu.ac.th/tal/tal-timework/timestamp",
         {
           method: "POST",
           body: formData,
         }
       );
+      
       const result = await response.json();
       if (!response.ok) {
         throw new Error("Network response was not ok");
@@ -121,6 +137,7 @@ const CheckInScreen = () => {
 
       _callHistory();
     } catch (error) {
+      console.error("Submit Error:", error);
       alert("เกิดข้อผิดพลาดขณะส่งข้อมูล");
     }
   };
@@ -145,7 +162,7 @@ const CheckInScreen = () => {
     const dateStr = currentTime.toISOString().split("T")[0];
     setLoadingCheckins(true);
     fetch(
-      `https://apisprod.wu.ac.th/tal/tal-timework/get-timestamp-today?personId=${personId}&date=${dateStr}`
+      `https://apisprd.wu.ac.th/tal/tal-timework/get-timestamp-today?personId=${personId}&date=${dateStr}`
     )
       .then((res) => res.json())
       .then((json) => {
@@ -256,6 +273,7 @@ const CheckInScreen = () => {
         parseFloat(locations[i].LNG)
       );
       const distanceRadius = distance - parseFloat(locations[i].RADIUS);
+      const Inarea = distance;
       const status = distanceRadius < 0;
 
       if (
@@ -268,6 +286,7 @@ const CheckInScreen = () => {
           message: locations[i].UNIT_NAME,
           unitId: locations[i].TIME_POINT_ID,
           distance: distanceRadius,
+          inArea: Inarea,
         };
         if (status) break;
       }
@@ -280,7 +299,7 @@ const CheckInScreen = () => {
           nearLocation.distance < 0
             ? `พื้นที่ ${nearLocation.message}`
             : `ใกล้ ${nearLocation.message}`,
-        distance: Math.max(nearLocation.distance, 0),
+        distance: Math.max(nearLocation.inArea, 0),
         unitId: nearLocation.unitId,
       });
     } else {
@@ -305,6 +324,31 @@ const CheckInScreen = () => {
 
   const switchCamera = () => {
     setCameraType((prevType) => (prevType === "back" ? "front" : "back"));
+  };
+
+  const takePictureAndSubmit = async (status: number, message: string) => {
+    if (locationStatus.status !== 1 && !reason.trim()) {
+      setReasonError(true);
+      return;
+    }
+    
+    try {
+      // Take picture first
+      if (cameraRef.current) {
+        const options = {
+          skipProcessing: true,
+        };
+        const photoResult = await cameraRef.current.takePictureAsync(options);
+        setPhoto(photoResult.uri);
+        
+        // After photo is taken, then submit the status with the new photo URI
+        await submitCheckinStatus(status, photoResult.uri);
+        setModalText(message);
+      }
+    } catch (error) {
+      console.error("Error taking picture and submitting:", error);
+      alert("เกิดข้อผิดพลาดขณะถ่ายภาพหรือส่งข้อมูล");
+    }
   };
 
   if (hasCameraPermission === null || hasLocationPermission === null) {
@@ -742,15 +786,8 @@ const CheckInScreen = () => {
             style={[
               styles.captureButton,
               { backgroundColor: "#dcfae6", zIndex: 99 },
-            ]}
-            onPress={() => {
-              if (locationStatus.status !== 1 && !reason.trim()) {
-                setReasonError(true);
-                return;
-              }
-              takePicture();
-              submitCheckinStatus(locationStatus.status === 1 ? 2 : 92);
-              setModalText("เข้างานสำเร็จแล้ว");
+            ]}            onPress={() => {
+              takePictureAndSubmit(locationStatus.status === 1 ? 2 : 92, "เข้างานสำเร็จแล้ว");
             }}
             activeOpacity={0.8}
           >
@@ -771,15 +808,8 @@ const CheckInScreen = () => {
             style={[
               styles.captureButton,
               { backgroundColor: "#fee4e2", zIndex: 99 },
-            ]}
-            onPress={() => {
-              if (locationStatus.status !== 1 && !reason.trim()) {
-                setReasonError(true);
-                return;
-              }
-              takePicture();
-              submitCheckinStatus(locationStatus.status === 1 ? 3 : 93);
-              setModalText("ออกงานสำเร็จแล้ว");
+            ]}            onPress={() => {
+              takePictureAndSubmit(locationStatus.status === 1 ? 3 : 93, "ออกงานสำเร็จแล้ว");
             }}
             activeOpacity={0.8}
           >
