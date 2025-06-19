@@ -82,7 +82,7 @@ const CheckInScreen = () => {
 
     try {
       const response = await fetch(
-        "https://apisqas.wu.ac.th/tal/tal-timework/timestamp",
+        "https://apisprod.wu.ac.th/tal/tal-timework/timestamp",
         {
           method: "POST",
           body: formData,
@@ -146,7 +146,7 @@ const CheckInScreen = () => {
     const dateStr = currentTime.toISOString().split("T")[0];
     setLoadingCheckins(true);
     fetch(
-      `https://apisqas.wu.ac.th/tal/tal-timework/get-timestamp-today?personId=${personId}&date=${dateStr}`
+      `https://apisprod.wu.ac.th/tal/tal-timework/get-timestamp-today?personId=${personId}&date=${dateStr}`
     )
       .then((res) => res.json())
       .then((json) => {
