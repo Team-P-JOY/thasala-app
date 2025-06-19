@@ -121,7 +121,6 @@ const CheckInScreen = () => {
 
       _callHistory();
     } catch (error) {
-      console.error("Submit Error:", error.message);
       alert("เกิดข้อผิดพลาดขณะส่งข้อมูล");
     }
   };
