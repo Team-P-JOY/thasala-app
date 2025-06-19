@@ -77,8 +77,8 @@ const CheckInScreen = () => {
     formData.append("distance", locationStatus.distance.toString());
     formData.append("radius", "60");
     formData.append("remark", locationStatus.status !== 1 ? reason : "");
-    //formData.append("photo", photo ? photo : "");
-    
+    formData.append("photo", photo ? photo : "");
+    formData.append("gps", 3 );
 
     try {
       const response = await fetch(
@@ -89,6 +89,9 @@ const CheckInScreen = () => {
         }
       );
       const result = await response.json();
+      if (!response.ok) {
+        throw new Error("Network response was not ok");
+      }
       setPhoto(null);
       if (result.code === 200) {
         // ToastAndroid.show("บันทึกสำเร็จ", ToastAndroid.SHORT);
@@ -118,7 +121,7 @@ const CheckInScreen = () => {
 
       _callHistory();
     } catch (error) {
-      console.error("Submit Error:", error);
+      console.error("Submit Error:", error.message);
       alert("เกิดข้อผิดพลาดขณะส่งข้อมูล");
     }
   };
