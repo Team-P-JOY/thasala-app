@@ -33,7 +33,6 @@ const Login = () => {
     if (res.data.status === "success") {
       const expoToken = await registerForPushNotifications();
       const osname = await Device.osName;
-      //console.log("Expo Push Token:", expoToken);
       const formData = new FormData();
       formData.append("personId", res.data.data.person_id);
       formData.append("expoToken", expoToken ?? "");
@@ -74,7 +73,7 @@ const Login = () => {
 
     setLoading(true);
     const response = await loginApi(username.value, password.value);
-    console.log(response);
+
     if (!response) {
       setUsername({ ...username, error: "Invalid username or password" });
       setLoading(false);

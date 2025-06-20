@@ -8,49 +8,49 @@ import { theme } from "@/core/theme";
 import { useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import { Image, StyleSheet, View } from "react-native";
-import { Dropdown } from 'react-native-element-dropdown';
+import { Dropdown } from "react-native-element-dropdown";
 import { Button, SegmentedButtons, TextInput } from "react-native-paper";
 import { useSelector } from "react-redux";
 
 const router = useRouter();
 
 const data = [
-    {label: 'มานิต', value: '1'},
-    {label: 'ณัฐดนัย', value: '2'},
-    {label: 'ฮากิม', value: '3'},
-    {label: 'Item 4', value: '4'},
-    {label: 'Item 5', value: '5'},
-    {label: 'Item 6', value: '6'},
-    {label: 'Item 7', value: '7'},
-    {label: 'Item 8', value: '8'},
+  { label: "มานิต", value: "1" },
+  { label: "ณัฐดนัย", value: "2" },
+  { label: "ฮากิม", value: "3" },
+  { label: "Item 4", value: "4" },
+  { label: "Item 5", value: "5" },
+  { label: "Item 6", value: "6" },
+  { label: "Item 7", value: "7" },
+  { label: "Item 8", value: "8" },
 ];
 
 const LeaveForm = () => {
   const { user } = useSelector((state: RootState) => state.auth);
   const [modalVisible, setModalVisible] = useState(false);
-  const [leavetype, setLeavetype] = useState([]);// ประเภทการลา
-  const [leavesubstitute, setLeavesubstitute] = useState([]);//ผู้รับมอบงาน
+  const [leavetype, setLeavetype] = useState([]); // ประเภทการลา
+  const [leavesubstitute, setLeavesubstitute] = useState([]); //ผู้รับมอบงาน
   const [loading, setLoading] = useState(true);
   const [isFocusLeavetype, setIsFocusLeavetype] = useState(false);
   const [value, setValue] = useState(null);
   const [isFocus, setIsFocus] = useState(false);
   const [reason, setReason] = useState(null);
-  const [round, setRount] = React.useState('3');
+  const [round, setRount] = React.useState("3");
 
-  const _renderItem2 = item => {
-      return (
+  const _renderItem2 = (item) => {
+    return (
       <View style={styles.item}>
-          <CustomText style={styles.textItem}>{item.label}</CustomText>
+        <CustomText style={styles.textItem}>{item.label}</CustomText>
       </View>
-      );
+    );
   };
 
-  const _renderItem = item => {
-      return (
+  const _renderItem = (item) => {
+    return (
       <View style={styles.item}>
-          <CustomText style={styles.textItem}>{item.label}</CustomText>
+        <CustomText style={styles.textItem}>{item.label}</CustomText>
       </View>
-      );
+    );
   };
 
   // const _renderItem = item => {
@@ -60,7 +60,7 @@ const LeaveForm = () => {
   //     </View>
   //     );
   // };
-  
+
   useEffect(() => {
     if (loading == true) {
       //initSelectMonth();
@@ -87,15 +87,15 @@ const LeaveForm = () => {
   return (
     <CustomBackground>
       {/* Top bar session */}
-      <CustomTopBar 
-        title="บันทึกการลา" 
+      <CustomTopBar
+        title="บันทึกการลา"
         back={() => router.push("/tal/Leave")}
       />
 
       <View style={styles.container}>
         <CustomText>ประเภทการลา</CustomText>
         <Dropdown
-          style={[styles.dropdown, isFocusLeavetype && { borderColor: 'blue' }]}
+          style={[styles.dropdown, isFocusLeavetype && { borderColor: "blue" }]}
           placeholderStyle={styles.placeholderStyle}
           selectedTextStyle={styles.selectedTextStyle}
           data={leavetype}
@@ -104,24 +104,26 @@ const LeaveForm = () => {
           searchPlaceholder="Search..."
           labelField="label"
           valueField="value"
-          placeholder={isFocusLeavetype ? '...' : 'กรุณาเลือกประเภทการลา'}
+          placeholder={isFocusLeavetype ? "..." : "กรุณาเลือกประเภทการลา"}
           value={value}
           onFocus={() => setIsFocusLeavetype(true)}
           onBlur={() => setIsFocusLeavetype(false)}
-          onChange={item => {
+          onChange={(item) => {
             // setValue(item.value);
             setIsFocusLeavetype(false);
-            console.log('selected', item.leaveDaybefore);
           }}
           renderLeftIcon={() => (
-              <Image style={styles.icon} source={require('../../assets/images/camera.png')} />
+            <Image
+              style={styles.icon}
+              source={require("../../assets/images/camera.png")}
+            />
           )}
-          renderItem={item => _renderItem(item)}
+          renderItem={(item) => _renderItem(item)}
         />
 
         <CustomText>ผู้รับมอบงาน</CustomText>
         <Dropdown
-          style={[styles.dropdown, isFocus && { borderColor: 'blue' }]}
+          style={[styles.dropdown, isFocus && { borderColor: "blue" }]}
           placeholderStyle={styles.placeholderStyle}
           selectedTextStyle={styles.selectedTextStyle}
           data={leavesubstitute}
@@ -130,19 +132,21 @@ const LeaveForm = () => {
           searchPlaceholder="Search..."
           labelField="label"
           valueField="value"
-          placeholder={isFocus ? '...' : 'กรุณาเลือกผู้รับมอบงาน'}
+          placeholder={isFocus ? "..." : "กรุณาเลือกผู้รับมอบงาน"}
           value={value}
           onFocus={() => setIsFocus(true)}
           onBlur={() => setIsFocus(false)}
-          onChange={item => {
+          onChange={(item) => {
             // setValue(item.value);
             // setIsFocus(false);
-            console.log('selected', item.value);
           }}
           renderLeftIcon={() => (
-              <Image style={styles.icon} source={require('../../assets/images/camera.png')} />
+            <Image
+              style={styles.icon}
+              source={require("../../assets/images/camera.png")}
+            />
           )}
-          renderItem={item => _renderItem(item)}
+          renderItem={(item) => _renderItem(item)}
         />
 
         <SegmentedButtons
@@ -150,35 +154,35 @@ const LeaveForm = () => {
           onValueChange={setRount}
           buttons={[
             {
-              value: '1',
-              label: 'ครึ่งวันเช้า',
+              value: "1",
+              label: "ครึ่งวันเช้า",
             },
             {
-              value: '2',
-              label: 'ครั้งวันบ่าย',
+              value: "2",
+              label: "ครั้งวันบ่าย",
             },
-            { value: '3', 
-              label: 'ทั้งวัน' },
+            { value: "3", label: "ทั้งวัน" },
           ]}
         />
 
         <CustomText>เหตุผล</CustomText>
         <CustomTextInput multiline={true} numberOfLines={4}></CustomTextInput>
         <View style={styles.inputCont}>
-          <TextInput 
-            multiline={true} 
-            numberOfLines={4} 
-            style={styles.input} 
+          <TextInput
+            multiline={true}
+            numberOfLines={4}
+            style={styles.input}
             underlineColor="transparent"
             value={reason}
-            onChangeText={(text: string) => 
-              setReason(text)
-            }
+            onChangeText={(text: string) => setReason(text)}
           />
         </View>
-        
 
-        <Button icon="camera" mode="contained" onPress={() => setModalVisible(true)}>
+        <Button
+          icon="camera"
+          mode="contained"
+          onPress={() => setModalVisible(true)}
+        >
           บันทึก
         </Button>
 
@@ -221,57 +225,56 @@ const LeaveForm = () => {
             // dispatch(logout());
             // setModalVisible(false);
             router.back();
-            console.log(reason);
           }}
           acceptText={"ตกลง"}
           cancelText={"ยกเลิก"}
         />
       </View>
     </CustomBackground>
-  )
-}
+  );
+};
 
-export default LeaveForm
+export default LeaveForm;
 
 const styles = StyleSheet.create({
   container: {
-      flex: 1,
-      backgroundColor: 'white',
-      padding: 16,
-      alignContent: 'center',
+    flex: 1,
+    backgroundColor: "white",
+    padding: 16,
+    alignContent: "center",
   },
   dropdown: {
     height: 50,
-    borderColor: 'gray',
+    borderColor: "gray",
     borderWidth: 0.5,
     borderRadius: 8,
     paddingHorizontal: 8,
-    marginBottom: 10
+    marginBottom: 10,
   },
   placeholderStyle: {
-    color: 'gray',
+    color: "gray",
   },
   icon: {
-      marginRight: 5,
-      width: 18,
-      height: 18,
+    marginRight: 5,
+    width: 18,
+    height: 18,
   },
   item: {
-      paddingVertical: 17,
-      paddingHorizontal: 4,
-      flexDirection: 'row',
-      justifyContent: 'space-between',
-      alignItems: 'center',
+    paddingVertical: 17,
+    paddingHorizontal: 4,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
   },
   selectedTextStyle: {
-      color: 'black',
+    color: "black",
   },
-  inputCont:{
+  inputCont: {
     width: "100%",
     marginVertical: 5,
   },
   input: {
     backgroundColor: theme.colors.surface,
-    borderColor: "red"
+    borderColor: "red",
   },
 });

@@ -5,7 +5,13 @@ import { theme } from "@/core/theme";
 import { Ionicons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
-import { ActivityIndicator, FlatList, StyleSheet, TouchableOpacity, View } from "react-native";
+import {
+  ActivityIndicator,
+  FlatList,
+  StyleSheet,
+  TouchableOpacity,
+  View,
+} from "react-native";
 
 export default function NotificationListScreen() {
   const router = useRouter();
@@ -19,10 +25,10 @@ export default function NotificationListScreen() {
       setLoading(true);
       try {
         const url = `http://10.250.2.9/apis/mbl/mbl-notification/${personid}/${module}/${mode}/viewnotification`;
-        console.log("Fetching Notification List from:", url);
+
         const res = await fetch(url);
         const json = await res.json();
-        console.log("Notification List Data:", json);
+
         setData(json.dtNotification || []);
       } catch {
         setData([]);
@@ -47,8 +53,8 @@ export default function NotificationListScreen() {
           params: {
             personid,
             mode,
-            rowNo: item.rowNo // ใช้ rowNo ที่แต่ละแถวมี
-          }
+            rowNo: item.rowNo, // ใช้ rowNo ที่แต่ละแถวมี
+          },
         });
       }}
     >
@@ -61,12 +67,21 @@ export default function NotificationListScreen() {
         />
       </View>
       <View style={styles.textCol}>
-        <CustomText bold style={styles.itemTitle}>{item.title}</CustomText>
+        <CustomText bold style={styles.itemTitle}>
+          {item.title}
+        </CustomText>
         <CustomText style={styles.itemDesc}>{item.detail}</CustomText>
       </View>
       <View style={styles.timeCol}>
-        <Ionicons name="time-outline" size={14} color="#FF9500" style={{ marginBottom: 1 }} />
-        <CustomText style={styles.itemTime}>{item.dateCreated} {item.timeCreated}</CustomText>
+        <Ionicons
+          name="time-outline"
+          size={14}
+          color="#FF9500"
+          style={{ marginBottom: 1 }}
+        />
+        <CustomText style={styles.itemTime}>
+          {item.dateCreated} {item.timeCreated}
+        </CustomText>
       </View>
     </TouchableOpacity>
   );
@@ -74,9 +89,7 @@ export default function NotificationListScreen() {
   return (
     <CustomBackground>
       <CustomTopBar title="รายการแจ้งเตือน" />
-        <View style={{padding: 12, backgroundColor: "#f2f2f7"}}>
-  
-  </View>
+      <View style={{ padding: 12, backgroundColor: "#f2f2f7" }}></View>
 
       {loading ? (
         <View style={{ alignItems: "center", marginTop: 44 }}>
@@ -85,13 +98,22 @@ export default function NotificationListScreen() {
         </View>
       ) : !data || data.length === 0 ? (
         <View style={{ alignItems: "center", marginTop: 60 }}>
-          <Ionicons name="cloud-outline" size={60} color="#bfc5da" style={{ marginBottom: 10 }} />
-          <CustomText bold style={styles.empty}>ไม่มีรายการ</CustomText>
+          <Ionicons
+            name="cloud-outline"
+            size={60}
+            color="#bfc5da"
+            style={{ marginBottom: 10 }}
+          />
+          <CustomText bold style={styles.empty}>
+            ไม่มีรายการ
+          </CustomText>
         </View>
       ) : (
         <FlatList
           data={data}
-          keyExtractor={item => item.rowNo?.toString() || item.notiId?.toString()}
+          keyExtractor={(item) =>
+            item.rowNo?.toString() || item.notiId?.toString()
+          }
           renderItem={renderItem}
           contentContainerStyle={{ paddingBottom: 32 }}
           showsVerticalScrollIndicator={false}

@@ -7,7 +7,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import { ScrollView, StyleSheet, TouchableOpacity, View } from "react-native";
-import { Card, FAB } from 'react-native-paper';
+import { Card, FAB } from "react-native-paper";
 import { useSelector } from "react-redux";
 import MenuTal from "./MenuTal";
 
@@ -16,7 +16,7 @@ const router = useRouter();
 const Leave = () => {
   const { user } = useSelector((state: RootState) => state.auth);
   const [loading, setLoading] = useState(true);
-  const [leavetype, setLeavetype] = useState([]);// สถิติการลา
+  const [leavetype, setLeavetype] = useState([]); // สถิติการลา
   const [state, setState] = React.useState({ open: false });
   const onStateChange = ({ open }) => setState({ open });
   const { open } = state;
@@ -41,7 +41,6 @@ const Leave = () => {
         .then((response) => response.json())
         .then((data) => {
           if (data.code === 200) {
-            console.log(data.dtLeavecumulative);
             setLeavetype(data.dtLeavecumulative);
             setLoading(false);
           }
@@ -52,7 +51,7 @@ const Leave = () => {
   return (
     <CustomBackground>
       {/* Top bar session */}
-      <CustomTopBar 
+      <CustomTopBar
         title={`บันทึกการลาปีงบประมาณ ${fiscalYear}`}
         back={() => router.push("/home")}
       />
@@ -77,7 +76,14 @@ const Leave = () => {
             >
               <Card.Content>
                 <TouchableOpacity key={index}>
-                  <CustomText bold numberOfLines={1} ellipsizeMode="tail" style={{ color: "white", fontSize: 18 }}>{m.leaveName}</CustomText>
+                  <CustomText
+                    bold
+                    numberOfLines={1}
+                    ellipsizeMode="tail"
+                    style={{ color: "white", fontSize: 18 }}
+                  >
+                    {m.leaveName}
+                  </CustomText>
                   <View
                     style={{
                       flexDirection: "row",
@@ -90,48 +96,50 @@ const Leave = () => {
                       color={"#cedd7a"}
                       style={{ marginRight: 2, marginTop: 10 }}
                     />
-                    <CustomText style={styles.textUseday}> ใช้ไป {m.useday} วัน | {m.qty} ครั้ง</CustomText>
+                    <CustomText style={styles.textUseday}>
+                      {" "}
+                      ใช้ไป {m.useday} วัน | {m.qty} ครั้ง
+                    </CustomText>
                   </View>
                 </TouchableOpacity>
               </Card.Content>
             </Card>
           ))}
         </View>
-        
       </ScrollView>
 
       {/* <PaperProvider>
         <Portal> */}
-          <FAB.Group
-            open={open}
-            visible
-            icon={open ? 'close' : 'plus'}
-            actions={[
-              {
-                icon: 'shape-square-rounded-plus',
-                label: 'สร้างใบลา',
-                onPress: () => router.push("/tal/LeaveForm"),
-              },
-              {
-                icon: 'calendar-today',
-                label: 'ปีงบประมาณ',
-                onPress: () => console.log('Pressed email'),
-              },
-            ]}
-            onStateChange={onStateChange}
-            onPress={() => {
-                if (open) {
-                // do something if the speed dial is open
-                }
-            }}
-          />
-        {/* </Portal>
+      <FAB.Group
+        open={open}
+        visible
+        icon={open ? "close" : "plus"}
+        actions={[
+          {
+            icon: "shape-square-rounded-plus",
+            label: "สร้างใบลา",
+            onPress: () => router.push("/tal/LeaveForm"),
+          },
+          {
+            icon: "calendar-today",
+            label: "ปีงบประมาณ",
+            onPress: () => console.log("Pressed email"),
+          },
+        ]}
+        onStateChange={onStateChange}
+        onPress={() => {
+          if (open) {
+            // do something if the speed dial is open
+          }
+        }}
+      />
+      {/* </Portal>
       </PaperProvider> */}
     </CustomBackground>
-  )
-}
+  );
+};
 
-export default Leave
+export default Leave;
 
 const styles = StyleSheet.create({
   container: {
@@ -139,14 +147,14 @@ const styles = StyleSheet.create({
     padding: 15,
   },
   scrollView: {
-    padding: 10, 
-    height: "auto", 
+    padding: 10,
+    height: "auto",
     // backgroundColor: "#000",
     // flexGrow: 1
   },
   textUseday: {
     color: "#FA8072",
-    marginTop: 10
+    marginTop: 10,
   },
   title: {
     marginBottom: 20,
@@ -182,10 +190,10 @@ const styles = StyleSheet.create({
     //paddingHorizontal: 10,
     //backgroundColor: "#ff0000",
   },
-  menuChild:{
-    alignItems: "center", 
-    width: 100, 
-    //height: 100, 
+  menuChild: {
+    alignItems: "center",
+    width: 100,
+    //height: 100,
     // borderRightColor: "#0000ff",
     // borderRightWidth:2,
   },
@@ -206,24 +214,24 @@ const styles = StyleSheet.create({
     color: "lightgray",
     fontSize: 12,
     textAlign: "right",
-    marginTop:10
+    marginTop: 10,
   },
   containnerTitle: {
     flexDirection: "row",
     marginTop: 10,
     backgroundColor: "#FF8C00",
-    padding: 10
+    padding: 10,
   },
   textName: {
     fontSize: 18,
-    color: "#696969"
+    color: "#696969",
   },
-  textWorkTotal:{
+  textWorkTotal: {
     color: "#FF8C00",
     fontWeight: "bold",
   },
   textWork1: {
     color: "#000",
     fontWeight: "bold",
-  }
+  },
 });

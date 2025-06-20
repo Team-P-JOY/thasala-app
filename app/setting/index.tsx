@@ -25,7 +25,7 @@ import { useDispatch, useSelector } from "react-redux";
 const index = () => {
   const [modalVisible, setModalVisible] = useState(false);
   const { user } = useSelector((state: RootState) => state.auth);
-  console.log("user", user);
+
   const dispatch = useDispatch();
   const router = useRouter();
   const [refreshing, setRefreshing] = useState(false);
@@ -129,7 +129,7 @@ const index = () => {
                 //ลบการลงทะเบียนใช้งาน Thasala Application
                 const expoToken = await registerForPushNotifications();
                 const osname = await Device.osName;
-                //console.log("Expo Push Token:", expoToken);
+
                 const formData = new FormData();
                 formData.append("personId", user?.person_id);
                 formData.append("expoToken", expoToken ?? "");

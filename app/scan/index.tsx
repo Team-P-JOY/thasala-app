@@ -96,7 +96,6 @@ export default function QrScreen() {
             Linking.openURL(data);
             setScanned(false); // Reset to allow scanning again
           } else {
-            console.log("Cannot open URL: " + data);
             Alert.alert("ข้อผิดพลาด", "ไม่สามารถเปิด URL นี้ได้: " + data);
             showModal();
           }

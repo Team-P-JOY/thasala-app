@@ -25,7 +25,6 @@ const MenuContent = () => {
           setData(initialMenu || []);
         }
       } catch (e) {
-        console.log("Load menu error:", e);
         // กรณีเกิดข้อผิดพลาด ให้ใช้ initialMenu เช่นกัน
         setData(initialMenu || []);
       }

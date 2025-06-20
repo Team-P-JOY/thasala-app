@@ -6,15 +6,15 @@ import { getDatetext } from "@/core/utils";
 import { Ionicons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
-import { ScrollView, StyleSheet, View } from 'react-native';
+import { ScrollView, StyleSheet, View } from "react-native";
 import { Divider, List } from "react-native-paper";
 
 const router = useRouter();
 const ScheduleDetail = () => {
   const { id, personId, startDate, shiftId } = useLocalSearchParams();
-  const [schedule, setSchedule] = useState([]);// ตารางปฏิบัติงาน
-  const [timestamp, setTimestamp] = useState([]);// ข้อมูลการลงเวลางาน
-  const [loading, setLoading] = useState(true);// สถานะการโหลดข้อมูล
+  const [schedule, setSchedule] = useState([]); // ตารางปฏิบัติงาน
+  const [timestamp, setTimestamp] = useState([]); // ข้อมูลการลงเวลางาน
+  const [loading, setLoading] = useState(true); // สถานะการโหลดข้อมูล
 
   const getStyles = (status) => {
     return [
@@ -24,22 +24,21 @@ const ScheduleDetail = () => {
       status >= 2 && styles.textStatusRed,
     ].filter(Boolean);
   };
-  
-    const fetchData = (personId: String, startDate: String, shiftId: String) => {
-      setLoading(true);
+
+  const fetchData = (personId: String, startDate: String, shiftId: String) => {
+    setLoading(true);
     //if (loading == true) {
-      fetch(
-        `https://apisprd.wu.ac.th/tal/tal-timework/get-schedule-detail?personId=${personId}&date=${startDate}&shiftId=${shiftId}`,
-        {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
-      )
+    fetch(
+      `https://apisprd.wu.ac.th/tal/tal-timework/get-schedule-detail?personId=${personId}&date=${startDate}&shiftId=${shiftId}`,
+      {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    )
       .then((response) => response.json())
       .then((data) => {
-        console.log(data);
         if (data.code === 200) {
           setSchedule(data.dtScheduleDetail[0]);
           setTimestamp(data.dtTimestamp);
@@ -47,39 +46,61 @@ const ScheduleDetail = () => {
         }
       });
     //}
-  }
+  };
 
-    useEffect(() => {
-        //console.log(id, personId, startDate, shiftId);
-        if (id && personId && startDate && shiftId) {
-          fetchData(personId, startDate, shiftId);
-        }
-      }, [id, personId, startDate, shiftId]);
+  useEffect(() => {
+    //console.log(id, personId, startDate, shiftId);
+    if (id && personId && startDate && shiftId) {
+      fetchData(personId, startDate, shiftId);
+    }
+  }, [id, personId, startDate, shiftId]);
   return (
     <CustomBackground>
       {/* Top bar session */}
-      <CustomTopBar 
-        title="รายละเอียด" 
+      <CustomTopBar
+        title="รายละเอียด"
         back={() => router.push("/tal/Schedule")}
       />
-      
+
       <View style={styles.container}>
         <View>
-          <CustomText bold style={styles.textDate}>{getDatetext(schedule.startDate, "th", "l")}</CustomText>
+          <CustomText bold style={styles.textDate}>
+            {getDatetext(schedule.startDate, "th", "l")}
+          </CustomText>
         </View>
         <View style={styles.containerTime}>
           <View style={styles.box1}>
-            <CustomText style={{color: theme.colors.primary}}>{getDatetext(schedule.dateCheckin, "th", "l")}</CustomText>
-            <View style={{ flexDirection: "row", justifyContent: "space-between", padding: 10 }}>
+            <CustomText style={{ color: theme.colors.primary }}>
+              {getDatetext(schedule.dateCheckin, "th", "l")}
+            </CustomText>
+            <View
+              style={{
+                flexDirection: "row",
+                justifyContent: "space-between",
+                padding: 10,
+              }}
+            >
               <Ionicons name="log-in-outline" size={50} color="#32cd32" />
-              <CustomText bold style={{color: "#808080"}}>{schedule.timeCheckin}</CustomText>
+              <CustomText bold style={{ color: "#808080" }}>
+                {schedule.timeCheckin}
+              </CustomText>
             </View>
           </View>
           <View style={styles.box2}>
-            <CustomText style={{color: theme.colors.primary}}>{getDatetext(schedule.dateCheckout, "th", "l")}</CustomText>
-            <View style={{ flexDirection: "row", justifyContent: "space-between", padding: 10 }}>
+            <CustomText style={{ color: theme.colors.primary }}>
+              {getDatetext(schedule.dateCheckout, "th", "l")}
+            </CustomText>
+            <View
+              style={{
+                flexDirection: "row",
+                justifyContent: "space-between",
+                padding: 10,
+              }}
+            >
               <Ionicons name="log-out-outline" size={50} color="#db2828" />
-              <CustomText bold style={{color: "#808080"}}>{schedule.timeCheckout}</CustomText>
+              <CustomText bold style={{ color: "#808080" }}>
+                {schedule.timeCheckout}
+              </CustomText>
             </View>
           </View>
         </View>
@@ -87,11 +108,16 @@ const ScheduleDetail = () => {
           <Text  variant="headlineMedium" style={{textAlign: "center", color: "green"}}>{(schedule.statusNameTh) ? schedule.statusNameTh : "-"}</Text>
         </View> */}
         <View>
-          <CustomText style={getStyles(schedule.status)}>{(schedule.statusNameTh) ? schedule.statusNameTh : "-"}</CustomText>
+          <CustomText style={getStyles(schedule.status)}>
+            {schedule.statusNameTh ? schedule.statusNameTh : "-"}
+          </CustomText>
         </View>
         <View style={styles.containnerTitle}>
           <Ionicons name="finger-print" size={50} color="#fff" />
-          <CustomText style={{color: "#fff", fontSize: 18}}> สแกนนิ้ว เข้า/ออก</CustomText>
+          <CustomText style={{ color: "#fff", fontSize: 18 }}>
+            {" "}
+            สแกนนิ้ว เข้า/ออก
+          </CustomText>
         </View>
         <ScrollView>
           <List.Section>
@@ -99,11 +125,22 @@ const ScheduleDetail = () => {
               <View key={index}>
                 <List.Item
                   title={
-                    <CustomText>{"วันที่ " + getDatetext(row.dateCheckin, "th", "l")}</CustomText>
+                    <CustomText>
+                      {"วันที่ " + getDatetext(row.dateCheckin, "th", "l")}
+                    </CustomText>
                   }
                   description={
-                    <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
-                      <Ionicons name={row.unitNameFin ? "finger-print" : "map"} size={22} color="#FA8072" />
+                    <View
+                      style={{
+                        flexDirection: "row",
+                        justifyContent: "space-between",
+                      }}
+                    >
+                      <Ionicons
+                        name={row.unitNameFin ? "finger-print" : "map"}
+                        size={22}
+                        color="#FA8072"
+                      />
                       <CustomText style={styles.labelShift}>
                         {row.unitNameFin ? row.unitNameFin : row.unitNameGps}
                       </CustomText>
@@ -117,7 +154,10 @@ const ScheduleDetail = () => {
                     />
                   )}
                   right={(props) => (
-                    <CustomText variant="labelSmall" style={{textAlign: "center", color: "gray"}}>
+                    <CustomText
+                      variant="labelSmall"
+                      style={{ textAlign: "center", color: "gray" }}
+                    >
                       {row.timeCheckin + " น."}
                     </CustomText>
                   )}
@@ -129,10 +169,10 @@ const ScheduleDetail = () => {
         </ScrollView>
       </View>
     </CustomBackground>
-  )
-}
+  );
+};
 
-export default ScheduleDetail
+export default ScheduleDetail;
 
 const styles = StyleSheet.create({
   container: {
@@ -143,7 +183,7 @@ const styles = StyleSheet.create({
   title: {
     marginBottom: 20,
   },
-  textDate:{
+  textDate: {
     fontSize: 16,
     fontWeight: "bold",
     color: "steelblue",
@@ -187,15 +227,15 @@ const styles = StyleSheet.create({
     borderRadius: 50,
     margin: "auto",
   },
-  textStatusGreen:{
+  textStatusGreen: {
     color: "white",
     backgroundColor: "green",
   },
-  textStatusGray:{
+  textStatusGray: {
     color: "white",
     backgroundColor: "gray",
   },
-  textStatusRed:{
+  textStatusRed: {
     color: "white",
     backgroundColor: "red",
   },
@@ -209,6 +249,6 @@ const styles = StyleSheet.create({
   labelShift: {
     color: "steelblue",
     fontSize: 14,
-    marginTop:5,
+    marginTop: 5,
   },
 });

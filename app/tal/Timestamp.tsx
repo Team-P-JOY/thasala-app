@@ -46,7 +46,6 @@ const Timestamp = () => {
     )
       .then((response) => response.json())
       .then((data) => {
-        console.log(data);
         if (data.code === 200) {
           let arr = [];
           for (var i = 0; i < data.dtMonth.length; i++) {
@@ -75,7 +74,6 @@ const Timestamp = () => {
       )
         .then((response) => response.json())
         .then((data) => {
-          console.log(data);
           if (data.code === 200) {
             setTimestamp(data.dtTimestamp);
             setLoading(false);
@@ -93,10 +91,7 @@ const Timestamp = () => {
   return (
     <CustomBackground>
       {/* Top bar session */}
-      <CustomTopBar 
-        title="Timestamp" 
-        back={() => router.push("/home")}
-      />
+      <CustomTopBar title="Timestamp" back={() => router.push("/home")} />
 
       {/* Menu session */}
       <MenuTal />
@@ -137,12 +132,25 @@ const Timestamp = () => {
               <View key={index}>
                 <List.Item
                   title={
-                    <CustomText bold style={styles.labelDate}>{"วันที่ " + getDatetext(row.dateCheckin, "th", "l")}</CustomText>
+                    <CustomText bold style={styles.labelDate}>
+                      {"วันที่ " + getDatetext(row.dateCheckin, "th", "l")}
+                    </CustomText>
                   }
                   description={
-                    <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
-                      <Ionicons name={row.unitNameFin ? "finger-print" : "map"} size={22} color="#FA8072" />
-                      <CustomText style={styles.labelShift}>{row.unitNameFin ? row.unitNameFin : row.unitNameGps}</CustomText>
+                    <View
+                      style={{
+                        flexDirection: "row",
+                        justifyContent: "space-between",
+                      }}
+                    >
+                      <Ionicons
+                        name={row.unitNameFin ? "finger-print" : "map"}
+                        size={22}
+                        color="#FA8072"
+                      />
+                      <CustomText style={styles.labelShift}>
+                        {row.unitNameFin ? row.unitNameFin : row.unitNameGps}
+                      </CustomText>
                     </View>
                   }
                   left={(props) => (
@@ -153,7 +161,9 @@ const Timestamp = () => {
                     />
                   )}
                   right={(props) => (
-                    <CustomText style={styles.textStatus}>{row.timeCheckin + " น."}</CustomText>
+                    <CustomText style={styles.textStatus}>
+                      {row.timeCheckin + " น."}
+                    </CustomText>
                   )}
                   style={styles.listShift}
                 />
@@ -163,12 +173,11 @@ const Timestamp = () => {
           </List.Section>
         )}
       </ScrollView>
-      
     </CustomBackground>
-  )
-}
+  );
+};
 
-export default Timestamp
+export default Timestamp;
 
 const styles = StyleSheet.create({
   container: {
@@ -209,8 +218,8 @@ const styles = StyleSheet.create({
     color: "gray",
   },
   scrollView: {
-    padding: 10, 
-    height: "auto", 
+    padding: 10,
+    height: "auto",
     // backgroundColor: "#000",
     // flexGrow: 1
   },
@@ -221,10 +230,10 @@ const styles = StyleSheet.create({
     //paddingHorizontal: 10,
     //backgroundColor: "#ff0000",
   },
-  menuChild:{
-    alignItems: "center", 
-    width: 100, 
-    //height: 100, 
+  menuChild: {
+    alignItems: "center",
+    width: 100,
+    //height: 100,
     // borderRightColor: "#0000ff",
     // borderRightWidth:2,
   },
@@ -245,19 +254,19 @@ const styles = StyleSheet.create({
     color: "lightgray",
     fontSize: 12,
     textAlign: "right",
-    marginTop:10
+    marginTop: 10,
   },
   containnerTitle: {
     flexDirection: "row",
     marginTop: 10,
     backgroundColor: "#FF8C00",
-    padding: 10
+    padding: 10,
   },
   textName: {
     fontSize: 18,
-    color: "#696969"
+    color: "#696969",
   },
-  textWorkTotal:{
+  textWorkTotal: {
     color: "#FF8C00",
     fontWeight: "bold",
   },
@@ -268,6 +277,6 @@ const styles = StyleSheet.create({
   labelShift: {
     color: "steelblue",
     fontSize: 14,
-    marginTop:5,
+    marginTop: 5,
   },
 });

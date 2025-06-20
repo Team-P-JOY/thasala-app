@@ -25,7 +25,7 @@ const index = () => {
     try {
       await AsyncStorage.setItem(MENU_STORAGE_KEY, JSON.stringify(newData));
     } catch (e) {
-      console.log("Save menu error:", e);
+      console.error("Save menu error:", e);
     }
   };
 
@@ -35,7 +35,7 @@ const index = () => {
       setData(initialMenu);
       dispatch(setMenu(initialMenu));
     } catch (e) {
-      console.log("Reset menu error:", e);
+      console.error("Reset menu error:", e);
     }
   };
 
@@ -69,7 +69,7 @@ const index = () => {
           dispatch(setMenu(initialMenu));
         }
       } catch (e) {
-        console.log("Load menu error:", e);
+        console.error("Load menu error:", e);
         // กรณีเกิดข้อผิดพลาด ให้ใช้ initialMenu เช่นกัน
         setData(initialMenu);
         dispatch(setMenu(initialMenu));

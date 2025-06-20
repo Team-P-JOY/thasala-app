@@ -80,7 +80,6 @@ const CheckInScreen = () => {
     formData.append("distance", locationStatus.distance.toFixed(2));
     formData.append("radius", "60");
     formData.append("remark", locationStatus.status !== 1 ? reason : "");
-    console.log("Photo URI:", photoUri);
 
     // Add photo as a file if available
     if (photoUri) {
@@ -98,7 +97,7 @@ const CheckInScreen = () => {
     }
 
     formData.append("gps", "3");
-    console.log("formData:", formData);
+
     try {
       const response = await fetch(
         "https://apisprd.wu.ac.th/tal/tal-timework/timestamp",
