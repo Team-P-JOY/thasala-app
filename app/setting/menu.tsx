@@ -1,23 +1,23 @@
-import { StyleSheet, TouchableOpacity, View } from "react-native";
-import React, { useEffect, useState } from "react";
 import CustomBackground from "@/components/CustomBackground";
-import CustomTopBar from "@/components/CustomTopBar";
 import CustomText from "@/components/CustomText";
-import { useRouter } from "expo-router";
-import { Ionicons } from "@expo/vector-icons";
-import DraggableFlatList from "react-native-draggable-flatlist";
-import { useSelector, useDispatch } from "react-redux";
+import CustomTopBar from "@/components/CustomTopBar";
+import { setMenu } from "@/core/authSlice";
 import { RootState } from "@/core/store";
 import { theme } from "@/core/theme";
-import { setMenu } from "@/core/authSlice";
+import { Ionicons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useRouter } from "expo-router";
+import React, { useEffect, useState } from "react";
+import { StyleSheet, TouchableOpacity, View } from "react-native";
+import DraggableFlatList from "react-native-draggable-flatlist";
 import { Switch } from "react-native-paper";
+import { useDispatch, useSelector } from "react-redux";
 
 const MENU_STORAGE_KEY = "thasala@menu";
 
 const index = () => {
   const { menu, initialMenu } = useSelector((state: RootState) => state.auth);
-  const [data, setData] = useState(menu);
+  const [data, setData] = useState(menu || initialMenu || []);
   const router = useRouter();
   const dispatch = useDispatch();
 
@@ -56,21 +56,28 @@ const index = () => {
     setData(newData);
     saveMenuOrder(newData);
   };
-
   useEffect(() => {
     const loadData = async () => {
       try {
         const jsonValue = await AsyncStorage.getItem(MENU_STORAGE_KEY);
         if (jsonValue != null && jsonValue.length > 0) {
           setData(JSON.parse(jsonValue));
+          dispatch(setMenu(JSON.parse(jsonValue)));
+        } else {
+          // ถ้าไม่มีข้อมูลใน AsyncStorage ให้ใช้ initialMenu แทน
+          setData(initialMenu);
+          dispatch(setMenu(initialMenu));
         }
       } catch (e) {
         console.log("Load menu error:", e);
+        // กรณีเกิดข้อผิดพลาด ให้ใช้ initialMenu เช่นกัน
+        setData(initialMenu);
+        dispatch(setMenu(initialMenu));
       }
     };
 
     loadData();
-  }, []);
+  }, [initialMenu, dispatch]);
 
   const renderItem = ({ item, drag, isActive }: any) => (
     <TouchableOpacity onLongPress={drag} style={[styles.menuItem]}>
