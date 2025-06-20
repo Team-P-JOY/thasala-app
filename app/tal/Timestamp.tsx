@@ -8,8 +8,8 @@ import { getDatetext } from "@/core/utils";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
-import { ActivityIndicator, ScrollView, StyleSheet, TouchableOpacity, View } from "react-native";
-import { Divider, List } from "react-native-paper";
+import { ActivityIndicator, RefreshControl, ScrollView, StyleSheet, TouchableOpacity, View } from "react-native";
+import { Chip, Surface } from "react-native-paper";
 import { useSelector } from "react-redux";
 import MenuTal from "./MenuTal";
 
@@ -21,10 +21,12 @@ const Timestamp = () => {
   let curYear = curDate.getFullYear() + 543;
   let monthly = curMonth < 10 ? "0" + curMonth : curMonth;
   monthly = monthly + "-" + curYear;
-  //console.log("this month " + monthly);
+  
   const [optionMonth, setOptionMonth] = useState<any[]>([]);
   const [month, setMonth] = useState(monthly);
-  const [timestamp, setTimestamp] = useState<any[]>([]);  const [loading, setLoading] = useState(true);
+  const [timestamp, setTimestamp] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   // State สำหรับควบคุมการแสดง modal เลือกเดือน
   const [monthSelectorVisible, setMonthSelectorVisible] = useState(false);
 
@@ -46,6 +48,13 @@ const Timestamp = () => {
     }
   };
 
+  // รีเฟรชข้อมูล
+  const onRefresh = () => {
+    setRefreshing(true);
+    fetchTimestampData().finally(() => setRefreshing(false));
+  };
+
+  // ฟังก์ชันสำหรับเรียกข้อมูลเดือน
   const initSelectMonth = () => {
     fetch(
       `https://apisprd.wu.ac.th/tal/tal-timework/${user.person_id}/getWorkmonth`,
@@ -69,13 +78,17 @@ const Timestamp = () => {
           }
           setOptionMonth(arr);
         }
+      })
+      .catch(error => {
+        console.error("Error fetching month data:", error);
       });
   };
 
-  useEffect(() => {
-    if (loading == true) {
-      initSelectMonth();
-      fetch(
+  // ฟังก์ชันสำหรับเรียกข้อมูล timestamp
+  const fetchTimestampData = async () => {
+    setLoading(true);
+    try {
+      const response = await fetch(
         `https://apisprd.wu.ac.th/tal/tal-timework/get-timestamp?personId=${user.person_id}&month=${month}`,
         {
           method: "GET",
@@ -83,14 +96,28 @@ const Timestamp = () => {
             "Content-Type": "application/json",
           },
         }
-      )
-        .then((response) => response.json())
-        .then((data) => {
-          if (data.code === 200) {
-            setTimestamp(data.dtTimestamp);
-            setLoading(false);
-          }
+      );
+      const data = await response.json();
+      if (data.code === 200) {
+        // เรียงลำดับข้อมูลโดยเอาวันล่าสุดขึ้นก่อน
+        const sortedData = [...data.dtTimestamp].sort((a, b) => {
+          const dateA = new Date(a.dateCheckin.split('/').reverse().join('-'));
+          const dateB = new Date(b.dateCheckin.split('/').reverse().join('-'));
+          return dateB.getTime() - dateA.getTime();
         });
+        setTimestamp(sortedData);
+      }
+    } catch (error) {
+      console.error("Error fetching timestamp data:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (loading == true) {
+      initSelectMonth();
+      fetchTimestampData();
     }
   }, [loading]);
   const handleSelect = (value: string) => {
@@ -146,55 +173,80 @@ const Timestamp = () => {
       {/* Body session */}
       <ScrollView
         style={styles.container}
-        contentContainerStyle={{ paddingBottom: 50 }}
+        contentContainerStyle={styles.contentContainer}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            colors={[theme.colors.primary]}
+          />
+        }
       >
         {loading ? (
-          <ActivityIndicator size="large" color="blue" />
+          <View style={styles.loadingContainer}>
+            <ActivityIndicator size="large" color={theme.colors.primary} />
+            <CustomText style={styles.loadingText}>กำลังโหลดข้อมูล...</CustomText>
+          </View>        ) : timestamp.length === 0 ? (
+          <View style={styles.noDataContainer}>
+            <Ionicons name="calendar-outline" size={50} color="#999" />
+            <CustomText style={styles.noDataText}>ไม่พบข้อมูลการลงเวลา</CustomText>
+          </View>
         ) : (
-          <List.Section>
-            {timestamp.map((row, index) => (
-              <View key={index}>
-                <List.Item
-                  title={
-                    <CustomText bold style={styles.labelDate}>
-                      {"วันที่ " + getDatetext(row.dateCheckin, "th", "l")}
-                    </CustomText>
-                  }
-                  description={
-                    <View
-                      style={{
-                        flexDirection: "row",
-                        justifyContent: "space-between",
-                      }}
-                    >
-                      <Ionicons
-                        name={row.unitNameFin ? "finger-print" : "map"}
-                        size={22}
-                        color="#FA8072"
-                      />
-                      <CustomText style={styles.labelShift}>
-                        {row.unitNameFin ? row.unitNameFin : row.unitNameGps}
+          <>
+              {timestamp.map((row, index) => (
+                <Surface key={index} style={styles.timestampItem}>
+                  <View style={styles.timestampHeader}>
+                    <View style={styles.dateContainer}>
+                      <Ionicons name="calendar" size={18} color={theme.colors.primary} />
+                      <CustomText bold style={styles.dateText}>
+                        {getDatetext(row.dateCheckin, "th", "l")}
                       </CustomText>
                     </View>
-                  }
-                  left={(props) => (
-                    <List.Icon
-                      {...props}
-                      icon={row.checktype === "0" ? "logout" : "login"}
-                      color={row.checktype === "0" ? "#db2828" : "#32cd32"}
-                    />
-                  )}
-                  right={(props) => (
-                    <CustomText style={styles.textStatus}>
-                      {row.timeCheckin + " น."}
-                    </CustomText>
-                  )}
-                  style={styles.listShift}
-                />
-                <Divider />
-              </View>
-            ))}
-          </List.Section>
+                    <Chip 
+                      mode="flat"
+                      style={[
+                        styles.timeChip, 
+                        row.checktype === "0" ? styles.timeOutChip : styles.timeInChip
+                      ]}
+                    >
+                      <CustomText style={styles.timeChipText}>
+                        {row.timeCheckin} น.
+                      </CustomText>
+                    </Chip>
+                  </View>                 
+                    <View style={styles.detailsRow}>
+                      
+                      
+                      <View style={styles.locationContainer}>
+                        <Ionicons
+                          name={row.unitNameFin ? "finger-print" : "location"}
+                          size={20}
+                          color="#666"
+                        />
+                        <CustomText style={styles.locationText} numberOfLines={1} ellipsizeMode="tail">
+                          {row.unitNameFin ? row.unitNameFin : row.unitNameGps || "ไม่ระบุสถานที่"}
+                        </CustomText>
+                      </View>
+
+                      
+                      <View style={styles.checkTypeContainer}>
+                        <Ionicons 
+                          name={row.checktype === "0" ? "log-out" : "log-in"} 
+                          size={24} 
+                          color={row.checktype === "0" ? "#db2828" : "#32cd32"} 
+                        />
+                        <CustomText style={[
+                          styles.checkTypeText,
+                          row.checktype === "0" ? styles.checkOutText : styles.checkInText
+                        ]}>
+                          {row.checktype === "0" ? "ออก" : "เข้า"}
+                        </CustomText>
+                      </View>
+                  </View>
+                    
+                </Surface>
+              ))}
+          </>
         )}      </ScrollView>
       
       {/* Month/Year Picker Component */}
@@ -213,17 +265,42 @@ const Timestamp = () => {
 
 export default Timestamp;
 
-const styles = StyleSheet.create({
-  container: {
-    // marginTop: 0,
-    padding: 15,
+const styles = StyleSheet.create({  container: {
+    flex: 1,
+    paddingHorizontal: 15,
+    paddingTop: 10,
+    paddingBottom: 5,
+  },
+  contentContainer: {
+    paddingBottom: 50,
+  },
+  loadingContainer: {
+    padding: 30,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  loadingText: {
+    marginTop: 10,
+    fontSize: 16,
+    color: theme.colors.primary,
+  },
+  noDataContainer: {
+    padding: 40,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  noDataText: {
+    marginTop: 15,
+    fontSize: 16,
+    color: '#999',
+    textAlign: 'center',
   },
   dropdownMonth: {
     marginTop: 10,
     marginBottom: 10,
     alignItems: "center",
   },
-  // New styles for month navigator
+  // Styles for month navigator
   monthNavigator: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -261,6 +338,93 @@ const styles = StyleSheet.create({
     color: theme.colors.primary,
     textAlign: 'center',
   },
+  // Styles for timestamp card
+  timestampCard: {
+    borderRadius: 12,
+    elevation: 3,
+    marginBottom: 15,
+  },
+  cardTitle: {
+    fontSize: 18,
+    color: theme.colors.primary,
+  },
+  cardContent: {
+    padding: 0,
+  },  timestampItem: {
+    padding: 12,
+    borderRadius: 8,
+    marginVertical: 4,
+    elevation: 1,
+    backgroundColor: '#fff',
+  },
+  timestampHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  dateContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  dateText: {
+    fontSize: 15,
+    color: '#333',
+    marginLeft: 8,
+  },
+  timeChip: {
+    height: 34,
+  },
+  timeInChip: {
+    backgroundColor: 'rgba(50, 205, 50, 0.2)',
+  },
+  timeOutChip: {
+    backgroundColor: 'rgba(219, 40, 40, 0.2)',
+  },
+  timeChipText: {
+    fontSize: 13,
+    fontWeight: 'bold',
+  },  timestampDetails: {
+    marginTop: 3,
+  },
+  detailsRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  checkTypeContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  checkTypeText: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginLeft: 8,
+  },
+  checkInText: {
+    color: '#32cd32',
+  },
+  checkOutText: {
+    color: '#db2828',
+  },  locationContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+    justifyContent: 'flex-start',
+    marginLeft: 8,
+    maxWidth: '60%',
+  },
+  locationText: {
+    fontSize: 14,
+    color: '#666',
+    marginLeft: 8,
+    textAlign: 'right',
+    flexShrink: 1,
+  },  itemDivider: {
+    marginTop: 10,
+    height: 1,
+    opacity: 0.7,
+  },
   listShift: {},
   title: {
     marginBottom: 20,
@@ -274,7 +438,6 @@ const styles = StyleSheet.create({
     height: 90,
     borderRadius: 40,
   },
-
   profileName: {
     fontSize: 20,
     color: theme.colors.primary,
@@ -284,7 +447,6 @@ const styles = StyleSheet.create({
   },
   token: {
     fontSize: 8,
-    // alignSelf: "flex-end",
     alignItems: "center",
     marginTop: 5,
     color: "gray",
@@ -292,22 +454,15 @@ const styles = StyleSheet.create({
   scrollView: {
     padding: 10,
     height: "auto",
-    // backgroundColor: "#000",
-    // flexGrow: 1
   },
   menuContainer: {
     flexDirection: "row",
     flexWrap: "wrap",
     justifyContent: "space-between",
-    //paddingHorizontal: 10,
-    //backgroundColor: "#ff0000",
   },
   menuChild: {
     alignItems: "center",
     width: 100,
-    //height: 100,
-    // borderRightColor: "#0000ff",
-    // borderRightWidth:2,
   },
   avatarIcon: {
     backgroundColor: "#C3A7F4",
@@ -345,7 +500,8 @@ const styles = StyleSheet.create({
   textWork1: {
     color: "#000",
     fontWeight: "bold",
-  },  labelShift: {
+  },
+  labelShift: {
     color: "steelblue",
     fontSize: 14,
     marginTop: 5,

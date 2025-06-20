@@ -7,13 +7,13 @@ import { Ionicons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import { ScrollView, StyleSheet, View } from "react-native";
-import { Divider, List } from "react-native-paper";
+import { ActivityIndicator, Card, Divider, List } from "react-native-paper";
 
-const router = useRouter();
 const ScheduleDetail = () => {
+  const router = useRouter();
   const { id, personId, startDate, shiftId } = useLocalSearchParams();
-  const [schedule, setSchedule] = useState([]); // ตารางปฏิบัติงาน
-  const [timestamp, setTimestamp] = useState([]); // ข้อมูลการลงเวลางาน
+  const [schedule, setSchedule] = useState<any>({}); // ตารางปฏิบัติงาน
+  const [timestamp, setTimestamp] = useState<any[]>([]); // ข้อมูลการลงเวลางาน
   const [loading, setLoading] = useState(true); // สถานะการโหลดข้อมูล
 
   const getStyles = (status) => {
@@ -25,9 +25,8 @@ const ScheduleDetail = () => {
     ].filter(Boolean);
   };
 
-  const fetchData = (personId: String, startDate: String, shiftId: String) => {
+  const fetchData = (personId: string, startDate: string, shiftId: string) => {
     setLoading(true);
-    //if (loading == true) {
     fetch(
       `https://apisprd.wu.ac.th/tal/tal-timework/get-schedule-detail?personId=${personId}&date=${startDate}&shiftId=${shiftId}`,
       {
@@ -44,130 +43,152 @@ const ScheduleDetail = () => {
           setTimestamp(data.dtTimestamp);
           setLoading(false);
         }
+      })
+      .catch((error) => {
+        console.error("Error fetching schedule details:", error);
+        setLoading(false);
       });
-    //}
   };
 
   useEffect(() => {
-    //console.log(id, personId, startDate, shiftId);
     if (id && personId && startDate && shiftId) {
-      fetchData(personId, startDate, shiftId);
+      fetchData(personId as string, startDate as string, shiftId as string);
     }
   }, [id, personId, startDate, shiftId]);
+
   return (
     <CustomBackground>
       {/* Top bar session */}
       <CustomTopBar
-        title="รายละเอียด"
+        title="รายละเอียดตารางงาน"
         back={() => router.push("/tal/Schedule")}
       />
+      
+      <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
+        {loading ? (
+          <View style={styles.loadingContainer}>
+            <ActivityIndicator size="large" color={theme.colors.primary} />
+            <CustomText style={styles.loadingText}>กำลังโหลดข้อมูล...</CustomText>
+          </View>
+        ) : (
+          <>
+            {/* ส่วนหัวแสดงข้อมูลวันที่และประเภทเวร */}
+            <Card style={styles.headerCard}>
+              <Card.Content>
+                <CustomText bold style={styles.textDate}>
+                  {getDatetext(schedule.startDate, "th", "l")}
+                </CustomText>
+                
+                {schedule.shiftTypeName && schedule.shiftName && (
+                  <View style={styles.shiftTypeContainer}>
+                    <CustomText style={styles.shiftTypeText}>
+                      {schedule.shiftTypeName}: {schedule.shiftName}
+                    </CustomText>
+                  </View>
+                )}
+                
+                <View style={styles.statusContainer}>
+                  <CustomText style={getStyles(schedule.status)}>
+                    {schedule.statusNameTh ? schedule.statusNameTh : "-"}
+                  </CustomText>
+                </View>
+              </Card.Content>
+            </Card>
 
-      <View style={styles.container}>
-        <View>
-          <CustomText bold style={styles.textDate}>
-            {getDatetext(schedule.startDate, "th", "l")}
-          </CustomText>
-        </View>
-        <View style={styles.containerTime}>
-          <View style={styles.box1}>
-            <CustomText style={{ color: theme.colors.primary }}>
-              {getDatetext(schedule.dateCheckin, "th", "l")}
-            </CustomText>
-            <View
-              style={{
-                flexDirection: "row",
-                justifyContent: "space-between",
-                padding: 10,
-              }}
-            >
-              <Ionicons name="log-in-outline" size={50} color="#32cd32" />
-              <CustomText bold style={{ color: "#808080" }}>
-                {schedule.timeCheckin}
-              </CustomText>
-            </View>
-          </View>
-          <View style={styles.box2}>
-            <CustomText style={{ color: theme.colors.primary }}>
-              {getDatetext(schedule.dateCheckout, "th", "l")}
-            </CustomText>
-            <View
-              style={{
-                flexDirection: "row",
-                justifyContent: "space-between",
-                padding: 10,
-              }}
-            >
-              <Ionicons name="log-out-outline" size={50} color="#db2828" />
-              <CustomText bold style={{ color: "#808080" }}>
-                {schedule.timeCheckout}
-              </CustomText>
-            </View>
-          </View>
-        </View>
-        {/* <View style={styles.textStatus}>
-          <Text  variant="headlineMedium" style={{textAlign: "center", color: "green"}}>{(schedule.statusNameTh) ? schedule.statusNameTh : "-"}</Text>
-        </View> */}
-        <View>
-          <CustomText style={getStyles(schedule.status)}>
-            {schedule.statusNameTh ? schedule.statusNameTh : "-"}
-          </CustomText>
-        </View>
-        <View style={styles.containnerTitle}>
-          <Ionicons name="finger-print" size={50} color="#fff" />
-          <CustomText style={{ color: "#fff", fontSize: 18 }}>
-            {" "}
-            สแกนนิ้ว เข้า/ออก
-          </CustomText>
-        </View>
-        <ScrollView>
-          <List.Section>
-            {timestamp.map((row, index) => (
-              <View key={index}>
-                <List.Item
-                  title={
-                    <CustomText>
-                      {"วันที่ " + getDatetext(row.dateCheckin, "th", "l")}
+            {/* การ์ดแสดงเวลาเข้า-ออก */}
+            <Card style={styles.timeCard}>
+              <Card.Content style={styles.timeCardContent}>
+                <View style={styles.timeBox}>
+                  <View style={styles.timeHeader}>
+                    <Ionicons name="log-in-outline" size={28} color="#32cd32" />
+                    <CustomText style={styles.timeHeaderText}>เวลาเข้า</CustomText>
+                  </View>
+                  <View style={styles.timeDetails}>
+                    <CustomText style={styles.timeText}>
+                      {schedule.timeCheckin || "-"}
                     </CustomText>
-                  }
-                  description={
-                    <View
-                      style={{
-                        flexDirection: "row",
-                        justifyContent: "space-between",
-                      }}
-                    >
-                      <Ionicons
-                        name={row.unitNameFin ? "finger-print" : "map"}
-                        size={22}
-                        color="#FA8072"
-                      />
-                      <CustomText style={styles.labelShift}>
-                        {row.unitNameFin ? row.unitNameFin : row.unitNameGps}
-                      </CustomText>
-                    </View>
-                  }
-                  left={(props) => (
-                    <List.Icon
-                      {...props}
-                      icon={row.checktype === "0" ? "logout" : "login"}
-                      color={row.checktype === "0" ? "#db2828" : "#32cd32"}
-                    />
-                  )}
-                  right={(props) => (
-                    <CustomText
-                      variant="labelSmall"
-                      style={{ textAlign: "center", color: "gray" }}
-                    >
-                      {row.timeCheckin + " น."}
+                    <CustomText style={styles.dateText}>
+                      {schedule.dateCheckin ? getDatetext(schedule.dateCheckin, "th", "short") : ""}
                     </CustomText>
-                  )}
-                />
-                <Divider />
-              </View>
-            ))}
-          </List.Section>
-        </ScrollView>
-      </View>
+                  </View>
+                </View>
+                
+                <View style={styles.timeDivider} />
+                
+                <View style={styles.timeBox}>
+                  <View style={styles.timeHeader}>
+                    <Ionicons name="log-out-outline" size={28} color="#db2828" />
+                    <CustomText style={styles.timeHeaderText}>เวลาออก</CustomText>
+                  </View>
+                  <View style={styles.timeDetails}>
+                    <CustomText style={styles.timeText}>
+                      {schedule.timeCheckout || "-"}
+                    </CustomText>
+                    <CustomText style={styles.dateText}>
+                      {schedule.dateCheckout ? getDatetext(schedule.dateCheckout, "th", "short") : ""}
+                    </CustomText>
+                  </View>
+                </View>
+              </Card.Content>
+            </Card>
+
+            {/* ส่วนแสดงรายการสแกนลายนิ้วมือ */}
+            <Card style={styles.fingerprintCard}>
+              <Card.Title
+                title="ประวัติการลงเวลา"
+                left={(props) => <Ionicons {...props} name="finger-print" size={24} color={theme.colors.primary} />}
+              />
+              <Card.Content>
+                {timestamp.length > 0 ? (
+                  <List.Section>
+                    {timestamp.map((row, index) => (
+                      <View key={index}>
+                        <List.Item
+                          title={
+                            <CustomText>
+                              {"วันที่ " + getDatetext(row.dateCheckin, "th", "l")}
+                            </CustomText>
+                          }
+                          description={
+                            <View style={styles.listItemDesc}>
+                              <Ionicons
+                                name={row.unitNameFin ? "finger-print" : "map"}
+                                size={22}
+                                color="#FA8072"
+                              />
+                              <CustomText style={styles.labelShift}>
+                                {row.unitNameFin ? row.unitNameFin : row.unitNameGps}
+                              </CustomText>
+                            </View>
+                          }
+                          left={(props) => (
+                            <List.Icon
+                              {...props}
+                              icon={row.checktype === "0" ? "logout" : "login"}
+                              color={row.checktype === "0" ? "#db2828" : "#32cd32"}
+                            />
+                          )}                          right={(props) => (
+                            <CustomText
+                              style={styles.timeStampText}
+                            >
+                              {row.timeCheckin + " น."}
+                            </CustomText>
+                          )}
+                        />
+                        <Divider />
+                      </View>
+                    ))}
+                  </List.Section>
+                ) : (
+                  <View style={styles.noDataContainer}>
+                    <CustomText style={styles.noDataText}>ไม่พบข้อมูลการลงเวลา</CustomText>
+                  </View>
+                )}
+              </Card.Content>
+            </Card>
+          </>
+        )}
+      </ScrollView>
     </CustomBackground>
   );
 };
@@ -176,56 +197,53 @@ export default ScheduleDetail;
 
 const styles = StyleSheet.create({
   container: {
-    marginTop: 0,
     flex: 1,
-    // padding: 15,
+    padding: 15,
   },
-  title: {
-    marginBottom: 20,
+  contentContainer: {
+    paddingBottom: 20,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  loadingText: {
+    marginTop: 10,
+    fontSize: 16,
+    color: theme.colors.primary,
+  },
+  headerCard: {
+    marginBottom: 15,
+    borderRadius: 10,
+    elevation: 4,
   },
   textDate: {
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: "bold",
-    color: "steelblue",
+    color: theme.colors.primary,
     textAlign: "center",
-    // marginTop: 20,
+    marginBottom: 10,
   },
-  containerTime: {
-    flexDirection: "row",
-    marginTop: 20,
-    // backgroundColor: "#f0f0f0",
+  shiftTypeContainer: {
+    alignItems: 'center',
+    marginBottom: 10,
   },
-  box1: {
-    width: "50%", // ขนาดกล่องแต่ละอัน
-    height: 100,
-    // backgroundColor: "#ff0000",
-    justifyContent: "center",
-    alignItems: "center",
-    // marginBottom: 10,
+  shiftTypeText: {
+    fontSize: 16,
+    color: '#555',
+    fontWeight: '600',
   },
-  box2: {
-    width: "50%", // ขนาดกล่องแต่ละอัน
-    height: 100,
-    // backgroundColor: "#4CAF50",
-    justifyContent: "center",
-    alignItems: "center",
-    borderLeftColor: "#808080",
-    borderLeftWidth: 2,
-    // marginBottom: 10,
+  statusContainer: {
+    alignItems: 'center',
   },
   textStatus: {
-    marginTop: 20,
     textAlign: "center",
-    // color: getBackgroundColor(isDarkMode, isError),
-    // backgroundColor: "#f0f0f0",
-    // backgroundColor: "red",
-    // color: "green",
-    padding: 10,
-    width: "90%",
-    // fontSize: 16,
+    padding: 8,
+    width: "100%",
     fontWeight: "bold",
-    borderRadius: 50,
-    margin: "auto",
+    borderRadius: 20,
   },
   textStatusGreen: {
     color: "white",
@@ -239,16 +257,74 @@ const styles = StyleSheet.create({
     color: "white",
     backgroundColor: "red",
   },
-  containnerTitle: {
+  timeCard: {
+    marginBottom: 15,
+    borderRadius: 10,
+    elevation: 4,
+  },
+  timeCardContent: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingVertical: 10,
+  },
+  timeBox: {
+    flex: 1,
+    alignItems: 'center',
+  },
+  timeHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 10,
+  },
+  timeHeaderText: {
+    fontSize: 16,
+    fontWeight: '600',
+    marginLeft: 6,
+  },
+  timeDetails: {
+    alignItems: 'center',
+  },
+  timeText: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#333',
+  },
+  dateText: {
+    fontSize: 14,
+    color: '#666',
+    marginTop: 4,
+  },
+  timeDivider: {
+    width: 1,
+    height: '80%',
+    backgroundColor: '#ddd',
+    alignSelf: 'center',
+  },
+  fingerprintCard: {
+    borderRadius: 10,
+    elevation: 4,
+  },
+  listItemDesc: {
     flexDirection: "row",
-    marginTop: 10,
-    backgroundColor: "#FF8C00",
-    padding: 10,
-    alignItems: "center",
+    alignItems: 'center',
+    marginTop: 5,
   },
   labelShift: {
     color: "steelblue",
     fontSize: 14,
-    marginTop: 5,
+    marginLeft: 8,
   },
+  timeStampText: {
+    textAlign: "center",
+    color: "gray",
+  },
+  noDataContainer: {
+    padding: 20,
+    alignItems: 'center',
+  },
+  noDataText: {
+    fontSize: 16,
+    color: '#888',
+    fontStyle: 'italic',
+  }
 });
