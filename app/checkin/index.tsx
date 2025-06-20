@@ -60,7 +60,10 @@ const CheckInScreen = () => {
   const showModal = () => setVisible(true);
   const hideModal = () => setVisible(false);
 
-  const submitCheckinStatus = async (status: number, photoUri: string | null = photo) => {
+  const submitCheckinStatus = async (
+    status: number,
+    photoUri: string | null = photo
+  ) => {
     const formData = new FormData();
     formData.append("personId", user.person_id.toString());
     formData.append("status", status.toString());
@@ -76,23 +79,24 @@ const CheckInScreen = () => {
     formData.append("unitId", locationStatus.unitId?.toString() ?? "1");
     formData.append("distance", locationStatus.distance.toFixed(2));
     formData.append("radius", "60");
-    formData.append("remark", locationStatus.status !== 1 ? reason : "");    console.log("Photo URI:", photoUri);
-    
+    formData.append("remark", locationStatus.status !== 1 ? reason : "");
+    console.log("Photo URI:", photoUri);
+
     // Add photo as a file if available
     if (photoUri) {
-      const filename = photoUri.split('/').pop() || 'photo.jpg';
+      const filename = photoUri.split("/").pop() || "photo.jpg";
       const match = /\.(\w+)$/.exec(filename);
-      const type = match ? `image/${match[1]}` : 'image/jpeg';
-      
-      formData.append('photo', {
+      const type = match ? `image/${match[1]}` : "image/jpeg";
+
+      formData.append("photo", {
         uri: photoUri,
         name: filename,
-        type
+        type,
       } as any);
     } else {
       formData.append("photo", "");
     }
-    
+
     formData.append("gps", "3");
     console.log("formData:", formData);
     try {
@@ -103,7 +107,7 @@ const CheckInScreen = () => {
           body: formData,
         }
       );
-      
+
       const result = await response.json();
       if (!response.ok) {
         throw new Error("Network response was not ok");
@@ -331,7 +335,7 @@ const CheckInScreen = () => {
       setReasonError(true);
       return;
     }
-    
+
     try {
       // Take picture first
       if (cameraRef.current) {
@@ -340,7 +344,7 @@ const CheckInScreen = () => {
         };
         const photoResult = await cameraRef.current.takePictureAsync(options);
         setPhoto(photoResult.uri);
-        
+
         // After photo is taken, then submit the status with the new photo URI
         await submitCheckinStatus(status, photoResult.uri);
         setModalText(message);
@@ -475,7 +479,7 @@ const CheckInScreen = () => {
                     </CustomText>
                   </View>
 
-                  {locationStatus.distance !== 0 ? (
+                  {locationStatus.distance !== 0 && (
                     <CustomText
                       style={[
                         styles.headerStatusDis,
@@ -495,8 +499,6 @@ const CheckInScreen = () => {
                         : ` ${(locationStatus.distance / 1000).toFixed(2)} กม.`}
                       ){" "}
                     </CustomText>
-                  ) : (
-                    ""
                   )}
 
                   {locationStatus.status !== 2 && (
@@ -786,8 +788,12 @@ const CheckInScreen = () => {
             style={[
               styles.captureButton,
               { backgroundColor: "#dcfae6", zIndex: 99 },
-            ]}            onPress={() => {
-              takePictureAndSubmit(locationStatus.status === 1 ? 2 : 92, "เข้างานสำเร็จแล้ว");
+            ]}
+            onPress={() => {
+              takePictureAndSubmit(
+                locationStatus.status === 1 ? 2 : 92,
+                "เข้างานสำเร็จแล้ว"
+              );
             }}
             activeOpacity={0.8}
           >
@@ -808,8 +814,12 @@ const CheckInScreen = () => {
             style={[
               styles.captureButton,
               { backgroundColor: "#fee4e2", zIndex: 99 },
-            ]}            onPress={() => {
-              takePictureAndSubmit(locationStatus.status === 1 ? 3 : 93, "ออกงานสำเร็จแล้ว");
+            ]}
+            onPress={() => {
+              takePictureAndSubmit(
+                locationStatus.status === 1 ? 3 : 93,
+                "ออกงานสำเร็จแล้ว"
+              );
             }}
             activeOpacity={0.8}
           >

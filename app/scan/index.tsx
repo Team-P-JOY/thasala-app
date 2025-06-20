@@ -230,7 +230,7 @@ export default function QrScreen() {
             </CameraView>
           </View>
         </>
-      )}{" "}
+      )}
       {tabId === "2" && (
         <View style={styles.comingSoonContainer}>
           <Ionicons

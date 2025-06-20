@@ -44,6 +44,7 @@ const Activity = () => {
           flexDirection: "row",
           alignItems: "center",
           paddingHorizontal: 10,
+          paddingBottom: 10,
         }}
       >
         <Ionicons name="sparkles" size={18} color={theme.colors.primary} />
@@ -73,7 +74,7 @@ const Activity = () => {
               size="large"
               animating={true}
               color={theme.colors.primary}
-            />{" "}
+            />
           </View>
         </View>
       )}
