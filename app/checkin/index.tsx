@@ -3,6 +3,7 @@ import CustomText from "@/components/CustomText";
 import CustomTopBar from "@/components/CustomTopBar";
 import { RootState } from "@/core/store";
 import { theme } from "@/core/theme";
+import { ApiUrl } from "@/core/utils";
 import { Ionicons } from "@expo/vector-icons";
 import { useFocusEffect } from "@react-navigation/native";
 import { Camera, CameraView } from "expo-camera";
@@ -109,13 +110,10 @@ const CheckInScreen = () => {
     formData.append("gps", "3");
 
     try {
-      const response = await fetch(
-        "https://apisprd.wu.ac.th/tal/tal-timework/timestamp",
-        {
-          method: "POST",
-          body: formData,
-        }
-      );
+      const response = await fetch(`${ApiUrl}/tal/tal-timework/timestamp`, {
+        method: "POST",
+        body: formData,
+      });
 
       const result = await response.json();
       if (!response.ok) {
@@ -166,7 +164,7 @@ const CheckInScreen = () => {
     const dateStr = currentTime.toISOString().split("T")[0];
     setLoadingCheckins(true);
     fetch(
-      `https://apisprd.wu.ac.th/tal/tal-timework/get-timestamp-today?personId=${personId}&date=${dateStr}`
+      `${ApiUrl}/tal/tal-timework/get-timestamp-today?personId=${personId}&date=${dateStr}`
     )
       .then((res) => res.json())
       .then((json) => {
@@ -217,7 +215,7 @@ const CheckInScreen = () => {
     const fetchLocations = async () => {
       try {
         const response = await fetch(
-          "https://apisprd.wu.ac.th/tal/tal-timework/timestampPoint"
+          `${ApiUrl}/tal/tal-timework/timestampPoint`
         );
         const jsonRes = await response.json();
         setLocations(jsonRes.dtTimestampPoint || []);

@@ -1,5 +1,6 @@
 import { RootState } from "@/core/store";
 import { theme } from "@/core/theme";
+import { ApiUrl } from "@/core/utils";
 import { Ionicons } from "@expo/vector-icons";
 import axios from "axios";
 import React, { useEffect, useState } from "react";
@@ -21,9 +22,7 @@ const Activity = () => {
     try {
       setLoading(true);
       const res = await axios.get(
-        "https://apisprd.wu.ac.th/trn/trn-act/show-activity-dashboard?personId=" +
-          user.person_id +
-          "&worktypeId=4"
+        `${ApiUrl}/trn/trn-act/show-activity-dashboard?personId=${user.person_id}&worktypeId=4`
       );
       if (res.data && res.data.dt && Array.isArray(res.data.dt)) {
         setData(res.data.dt);
@@ -121,9 +120,7 @@ const Activity = () => {
                     >
                       <Card.Cover
                         source={{
-                          uri:
-                            "https://apisprd.wu.ac.th/trn/trn-act/download?filepath=" +
-                            m.activityBannerPath,
+                          uri: `${ApiUrl}/trn/trn-act/download?filepath=${m.activityBannerPath}`,
                         }}
                         style={{ height: 150, borderRadius: 10 }}
                       />
