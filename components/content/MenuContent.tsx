@@ -43,7 +43,6 @@ const MenuContent = () => {
         paddingHorizontal: 10,
       }}
     >
-      {" "}
       {data &&
         data.map(
           (item, index) =>

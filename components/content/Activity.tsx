@@ -73,10 +73,10 @@ const Activity = () => {
               size="large"
               animating={true}
               color={theme.colors.primary}
-            />
+            />{" "}
           </View>
         </View>
-      )}{" "}
+      )}
       {!loading &&
         (data.length === 0 ||
           !data.some(
