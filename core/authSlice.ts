@@ -21,13 +21,13 @@ const INITIAL_MENU = [
     route: "/tal",
     show: true,
   },
-  {
-    key: 3,
-    label: "สวัสดิการ",
-    icon: "gift-outline",
-    route: "/portal/welfare",
-    show: true,
-  },
+  // {
+  //   key: 3,
+  //   label: "สวัสดิการ",
+  //   icon: "gift-outline",
+  //   route: "/portal/welfare",
+  //   show: true,
+  // },
   {
     key: 4,
     label: "แจ้งเตือน",
@@ -35,13 +35,13 @@ const INITIAL_MENU = [
     route: "/noti",
     show: true,
   },
-  {
-    key: 5,
-    label: "WUH Care",
-    icon: "heart-outline",
-    route: "/portal/wuh",
-    show: true,
-  },
+  // {
+  //   key: 5,
+  //   label: "WUH Care",
+  //   icon: "heart-outline",
+  //   route: "/portal/wuh",
+  //   show: true,
+  // },
   {
     key: 6,
     label: "ติดต่อเรา",
@@ -56,13 +56,13 @@ const INITIAL_MENU = [
     route: "/news",
     show: true,
   },
-  {
-    key: 8,
-    label: "ประกาศ",
-    icon: "megaphone-outline",
-    route: "/announce",
-    show: true,
-  },
+  // {
+  //   key: 8,
+  //   label: "ประกาศ",
+  //   icon: "megaphone-outline",
+  //   route: "/announce",
+  //   show: true,
+  // },
   {
     key: 9,
     label: "โปรไฟล์",
