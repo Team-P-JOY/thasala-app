@@ -1,25 +1,27 @@
-import { CameraView, useCameraPermissions } from "expo-camera";
+import CustomBackground from "@/components/CustomBackground";
+import CustomText from "@/components/CustomText";
+import CustomTopBar from "@/components/CustomTopBar";
+import { theme } from "@/core/theme";
+import { Ionicons } from "@expo/vector-icons";
+import { CameraType, CameraView, useCameraPermissions } from "expo-camera";
+import { useRouter } from "expo-router";
 import { useState } from "react";
 import {
+  Alert,
+  Dimensions,
+  Image,
+  Linking,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
-  Dimensions,
-  Image,
 } from "react-native";
-import CustomBackground from "@/components/CustomBackground";
-import CustomTopBar from "@/components/CustomTopBar";
-import { Ionicons } from "@expo/vector-icons";
-import { useRouter } from "expo-router";
-import CustomText from "@/components/CustomText";
-import { Appbar, Modal, Portal } from "react-native-paper";
-import { theme } from "@/core/theme";
+import { Modal, Portal } from "react-native-paper";
 
 const { width } = Dimensions.get("window");
 
 export default function QrScreen() {
-  const [facing, setFacing] = useState("back");
+  const [facing, setFacing] = useState<CameraType>("back");
   const [permission, requestPermission] = useCameraPermissions();
   const [scanned, setScanned] = useState(false);
   const router = useRouter();
@@ -70,20 +72,39 @@ export default function QrScreen() {
       </CustomBackground>
     );
   }
-
   function toggleCameraFacing() {
     setFacing((current) => (current === "back" ? "front" : "back"));
   }
-
   function handleBarCodeScanned({ type, data }: any) {
     setScanData(data);
     setScanned(true);
-    showModal();
 
-    // router.push({
-    //   pathname: "/farm/scan/[id]",
-    //   params: { id: data },
-    // });
+    // Check if the scanned data is a URL
+    const isUrl = data.match(
+      /^(http|https):\/\/[a-z0-9]+([\-\.]{1}[a-z0-9]+)*\.[a-z]{2,5}(:[0-9]{1,5})?(\/.*)?$/i
+    );
+
+    if (isUrl) {
+      // If it's a URL, open it in the default browser
+      Linking.canOpenURL(data)
+        .then((supported) => {
+          if (supported) {
+            Linking.openURL(data);
+            setScanned(false); // Reset to allow scanning again
+          } else {
+            console.log("Cannot open URL: " + data);
+            Alert.alert("ข้อผิดพลาด", "ไม่สามารถเปิด URL นี้ได้: " + data);
+            showModal();
+          }
+        })
+        .catch((err) => {
+          console.error("An error occurred", err);
+          showModal();
+        });
+    } else {
+      // If it's not a URL, show the modal
+      showModal();
+    }
   }
 
   return (
