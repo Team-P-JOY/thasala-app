@@ -3,6 +3,7 @@ import CustomText from "@/components/CustomText";
 import CustomTopBar from "@/components/CustomTopBar";
 import { RootState } from "@/core/store";
 import { theme } from "@/core/theme";
+import { ApiUrl } from "@/core/utils";
 import { Ionicons } from "@expo/vector-icons";
 import { useFocusEffect } from "@react-navigation/native";
 import { Camera, CameraView } from "expo-camera";
@@ -13,6 +14,7 @@ import * as Speech from "expo-speech";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
+  Animated,
   Platform,
   ScrollView,
   StyleSheet,
@@ -31,6 +33,11 @@ const CheckInScreen = () => {
   const [reasonError, setReasonError] = useState(false);
   const [checkinLogs, setCheckinLogs] = useState<any[]>([]);
   const [loadingCheckins, setLoadingCheckins] = useState<boolean>(false);
+
+  // Animation values
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+  const scaleAnim = useRef(new Animated.Value(0.95)).current;
+  const buttonScale = useRef(new Animated.Value(1)).current;
 
   const [hasCameraPermission, setHasCameraPermission] = useState<
     boolean | null
@@ -69,11 +76,15 @@ const CheckInScreen = () => {
     formData.append("status", status.toString());
     formData.append(
       "lat",
-      location.latitude.toString().substring(0, 10) || "0"
+      location.latitude !== null
+        ? location.latitude.toString().substring(0, 10)
+        : "0"
     );
     formData.append(
       "lng",
-      location.longitude.toString().substring(0, 10) || "0"
+      location.longitude !== null
+        ? location.longitude.toString().substring(0, 10)
+        : "0"
     );
     formData.append("device", Platform.OS);
     formData.append("unitId", locationStatus.unitId?.toString() ?? "1");
@@ -99,13 +110,10 @@ const CheckInScreen = () => {
     formData.append("gps", "3");
 
     try {
-      const response = await fetch(
-        "https://apisprd.wu.ac.th/tal/tal-timework/timestamp",
-        {
-          method: "POST",
-          body: formData,
-        }
-      );
+      const response = await fetch(`${ApiUrl}/tal/tal-timework/timestamp`, {
+        method: "POST",
+        body: formData,
+      });
 
       const result = await response.json();
       if (!response.ok) {
@@ -147,15 +155,6 @@ const CheckInScreen = () => {
 
   const playSound = async (text: string) => {
     setTimeout(async () => {
-      // const { sound } = await Audio.Sound.createAsync(path);
-      // await sound.playAsync();
-
-      // sound.setOnPlaybackStatusUpdate((status) => {
-      //   if (status.didJustFinish) {
-      //     sound.unloadAsync();
-      //   }
-      // });
-
       Speech.speak(text);
     }, 1000);
   };
@@ -165,7 +164,7 @@ const CheckInScreen = () => {
     const dateStr = currentTime.toISOString().split("T")[0];
     setLoadingCheckins(true);
     fetch(
-      `https://apisprd.wu.ac.th/tal/tal-timework/get-timestamp-today?personId=${personId}&date=${dateStr}`
+      `${ApiUrl}/tal/tal-timework/get-timestamp-today?personId=${personId}&date=${dateStr}`
     )
       .then((res) => res.json())
       .then((json) => {
@@ -174,21 +173,52 @@ const CheckInScreen = () => {
       .catch(() => setCheckinLogs([]))
       .finally(() => setLoadingCheckins(false));
   }
+  // Animation functions
+  const fadeIn = useCallback(() => {
+    Animated.parallel([
+      Animated.timing(fadeAnim, {
+        toValue: 1,
+        duration: 500,
+        useNativeDriver: true,
+      }),
+      Animated.timing(scaleAnim, {
+        toValue: 1,
+        duration: 500,
+        useNativeDriver: true,
+      }),
+    ]).start();
+  }, [fadeAnim, scaleAnim]);
+
+  const animateButtonPress = useCallback(() => {
+    Animated.sequence([
+      Animated.timing(buttonScale, {
+        toValue: 0.95,
+        duration: 100,
+        useNativeDriver: true,
+      }),
+      Animated.timing(buttonScale, {
+        toValue: 1,
+        duration: 100,
+        useNativeDriver: true,
+      }),
+    ]).start();
+  }, [buttonScale]);
 
   useEffect(() => {
     if (user) {
       _callHistory();
     }
-  }, [user]);
+    fadeIn();
+  }, [user, fadeIn]);
 
   useEffect(() => {
     const fetchLocations = async () => {
       try {
         const response = await fetch(
-          "https://e-jpas.wu.ac.th/checkin/point.js"
+          `${ApiUrl}/tal/tal-timework/timestampPoint`
         );
         const jsonRes = await response.json();
-        setLocations(jsonRes);
+        setLocations(jsonRes.dtTimestampPoint || []);
       } catch (error) {
         console.error("Error fetching locations:", error);
       } finally {
@@ -272,10 +302,10 @@ const CheckInScreen = () => {
       const distance = haversineDistance(
         lat,
         lng,
-        parseFloat(locations[i].LAT),
-        parseFloat(locations[i].LNG)
+        parseFloat(locations[i].lat),
+        parseFloat(locations[i].lng)
       );
-      const distanceRadius = distance - parseFloat(locations[i].RADIUS);
+      const distanceRadius = distance - parseFloat(locations[i].radius);
       const Inarea = distance;
       const status = distanceRadius < 0;
 
@@ -286,8 +316,8 @@ const CheckInScreen = () => {
       ) {
         nearLocation = {
           status: status,
-          message: locations[i].UNIT_NAME,
-          unitId: locations[i].TIME_POINT_ID,
+          message: locations[i].unitName,
+          unitId: locations[i].timePointId,
           distance: distanceRadius,
           inArea: Inarea,
         };
@@ -417,7 +447,6 @@ const CheckInScreen = () => {
         title="บันทึกเวลาเข้างาน"
         back={() => router.push("/home")}
       />
-
       <View style={styles.container}>
         <View style={styles.header}>
           <View style={{ flex: 1 }}>
@@ -496,13 +525,13 @@ const CheckInScreen = () => {
                       {locationStatus.distance < 1000
                         ? ` ${locationStatus.distance.toFixed(2)} ม.`
                         : ` ${(locationStatus.distance / 1000).toFixed(2)} กม.`}
-                      ){" "}
+                      )
                     </CustomText>
                   )}
 
                   {locationStatus.status !== 2 && (
                     <CustomText style={[styles.headerStatus2]}>
-                      {location.latitude}, {location.longitude}{" "}
+                      {location.latitude}, {location.longitude}
                     </CustomText>
                   )}
 
@@ -683,8 +712,8 @@ const CheckInScreen = () => {
                               }]).addTo(map).openPopup();
                     var locations = ${JSON.stringify(locations)};
                     locations.forEach(function(location) {
-                      var circle = L.circle([parseFloat(location.LAT), parseFloat(location.LNG)], {
-                            radius: parseFloat(location.RADIUS),
+                      var circle = L.circle([parseFloat(location.lat), parseFloat(location.lng)], {
+                            radius: parseFloat(location.radius),
                             color: '#6a11cb',
                             fillColor: '#6a11cb',
                             weight: 0.5,
@@ -701,30 +730,74 @@ const CheckInScreen = () => {
                           />
                         </>
                       ) : (
-                        <CustomText>กำลังดึงตำแหน่ง GPS...</CustomText>
+                        <View
+                          style={{
+                            alignItems: "center",
+                            justifyContent: "center",
+                            padding: 10,
+                          }}
+                        >
+                          <ActivityIndicator
+                            size="large"
+                            color={theme.colors.primary}
+                            style={{ marginBottom: 10 }}
+                          />
+                          <CustomText
+                            style={{
+                              textAlign: "center",
+                              color: theme.colors.primary,
+                            }}
+                          >
+                            กำลังดึงตำแหน่ง GPS...
+                          </CustomText>
+                          <CustomText
+                            style={{
+                              textAlign: "center",
+                              fontSize: 12,
+                              color: theme.colors.second,
+                              marginTop: 5,
+                            }}
+                          >
+                            โปรดรอสักครู่
+                          </CustomText>
+                        </View>
                       )}
                     </View>
 
                     <View style={styles.buttonsRow}>
                       <TouchableOpacity
                         style={styles.mapButton}
-                        onPress={_callCurrentLocation}
+                        onPress={() => {
+                          animateButtonPress();
+                          _callCurrentLocation();
+                        }}
                       >
-                        <Ionicons
-                          name="location-outline"
-                          size={28}
-                          color="white"
-                        />
+                        <Animated.View
+                          style={{ transform: [{ scale: buttonScale }] }}
+                        >
+                          <Ionicons
+                            name="location-outline"
+                            size={28}
+                            color="white"
+                          />
+                        </Animated.View>
                       </TouchableOpacity>
                       <TouchableOpacity
                         style={styles.mapButton}
-                        onPress={switchCamera}
+                        onPress={() => {
+                          animateButtonPress();
+                          switchCamera();
+                        }}
                       >
-                        <Ionicons
-                          name="camera-reverse-outline"
-                          size={28}
-                          color="white"
-                        />
+                        <Animated.View
+                          style={{ transform: [{ scale: buttonScale }] }}
+                        >
+                          <Ionicons
+                            name="camera-reverse-outline"
+                            size={28}
+                            color="white"
+                          />
+                        </Animated.View>
                       </TouchableOpacity>
                     </View>
                   </View>
@@ -740,63 +813,111 @@ const CheckInScreen = () => {
             end={{ x: 0, y: 0 }}
           />
         </View>
-
-        <View style={styles.content}>
-          <View style={{ flex: 2 }}>
+        <Animated.View
+          style={[
+            styles.content,
+            {
+              opacity: fadeAnim,
+              transform: [{ scale: scaleAnim }],
+            },
+          ]}
+        >
+          <View style={{ flex: 2, position: "relative", overflow: "hidden" }}>
             <CameraView
               style={styles.camera}
               facing={cameraType}
               ref={cameraRef}
-            ></CameraView>
+            />
+            <View style={styles.cameraOverlay} pointerEvents="none">
+              <View style={styles.cameraGuide}></View>
+            </View>
           </View>
-        </View>
+        </Animated.View>
       </View>
       <View style={styles.buttonBox}>
-        {locationStatus.status !== 1 && (
-          <View style={{ marginVertical: 15, alignItems: "center" }}>
-            <CustomText style={{ color: "red" }}>
-              กรุณากรอกเหตุผลการเช็คอินนอกพื้นที่
-            </CustomText>
-            <TextInput
+        <Animated.View
+          style={{
+            opacity: fadeAnim,
+            width: "100%",
+            alignItems: "center",
+          }}
+        >
+          {locationStatus.status !== 1 && (
+            <View
               style={{
-                borderWidth: 1,
-                borderColor: reasonError ? "red" : theme.colors.primary,
-                borderRadius: 8,
-                padding: 15,
-                width: 350,
-                marginTop: 6,
-                backgroundColor: "#fff",
+                marginVertical: 15,
+                alignItems: "center",
+                width: "100%",
               }}
-              placeholder="ใส่เหตุผลที่นี่"
-              value={reason}
-              onChangeText={(txt) => {
-                setReason(txt);
-                setReasonError(false);
-              }}
-              multiline
-            />
-            {reasonError && (
-              <CustomText style={{ color: "red", marginTop: 2, fontSize: 12 }}>
-                กรุณาระบุเหตุผล
+            >
+              <CustomText style={{ color: "red" }}>
+                กรุณากรอกเหตุผลการเช็คอินนอกพื้นที่
               </CustomText>
-            )}
-          </View>
-        )}
+              <TextInput
+                style={{
+                  borderWidth: 1,
+                  borderColor: reasonError ? "red" : theme.colors.primary,
+                  borderRadius: 8,
+                  padding: 15,
+                  width: "90%",
+                  marginTop: 6,
+                  backgroundColor: "#fff",
+                  shadowColor: "#000",
+                  shadowOffset: { width: 0, height: 2 },
+                  shadowOpacity: 0.1,
+                  shadowRadius: 3,
+                  elevation: 2,
+                }}
+                placeholder="ใส่เหตุผลที่นี่"
+                value={reason}
+                onChangeText={(txt) => {
+                  setReason(txt);
+                  setReasonError(false);
+                }}
+                multiline
+              />
+              {reasonError && (
+                <CustomText
+                  style={{ color: "red", marginTop: 2, fontSize: 12 }}
+                >
+                  กรุณาระบุเหตุผล
+                </CustomText>
+              )}
+            </View>
+          )}
+        </Animated.View>
         <View style={styles.buttonRow}>
           <TouchableOpacity
             style={[
               styles.captureButton,
-              { backgroundColor: "#dcfae6", zIndex: 99 },
+              {
+                backgroundColor: "#dcfae6",
+                zIndex: 99,
+                opacity: locationStatus.status === 2 ? 0.6 : 1,
+              },
             ]}
             onPress={() => {
-              takePictureAndSubmit(
-                locationStatus.status === 1 ? 2 : 92,
-                "เข้างานสำเร็จแล้ว"
-              );
+              if (locationStatus.status !== 2) {
+                animateButtonPress();
+                takePictureAndSubmit(
+                  locationStatus.status === 1 ? 2 : 92,
+                  "เข้างานสำเร็จแล้ว"
+                );
+              } else {
+                // แสดงข้อความเตือนเมื่อกำลังโหลด GPS
+                setModalText("กรุณารอสักครู่\nระบบกำลังตรวจสอบตำแหน่ง GPS");
+                showModal();
+              }
             }}
+            disabled={locationStatus.status === 2}
             activeOpacity={0.8}
           >
-            <View style={styles.iconTextRow}>
+            <Animated.View
+              style={[
+                styles.iconTextRow,
+                { transform: [{ scale: buttonScale }] },
+              ]}
+            >
               <Ionicons
                 name="log-in-outline"
                 size={22}
@@ -806,23 +927,39 @@ const CheckInScreen = () => {
               <CustomText bold style={{ color: "#079455", fontSize: 16 }}>
                 เข้างาน
               </CustomText>
-            </View>
+            </Animated.View>
           </TouchableOpacity>
-
           <TouchableOpacity
             style={[
               styles.captureButton,
-              { backgroundColor: "#fee4e2", zIndex: 99 },
+              {
+                backgroundColor: "#fee4e2",
+                zIndex: 99,
+                opacity: locationStatus.status === 2 ? 0.6 : 1,
+              },
             ]}
             onPress={() => {
-              takePictureAndSubmit(
-                locationStatus.status === 1 ? 3 : 93,
-                "ออกงานสำเร็จแล้ว"
-              );
+              if (locationStatus.status !== 2) {
+                animateButtonPress();
+                takePictureAndSubmit(
+                  locationStatus.status === 1 ? 3 : 93,
+                  "ออกงานสำเร็จแล้ว"
+                );
+              } else {
+                // แสดงข้อความเตือนเมื่อกำลังโหลด GPS
+                setModalText("กรุณารอสักครู่\nระบบกำลังตรวจสอบตำแหน่ง GPS");
+                showModal();
+              }
             }}
+            disabled={locationStatus.status === 2}
             activeOpacity={0.8}
           >
-            <View style={styles.iconTextRow}>
+            <Animated.View
+              style={[
+                styles.iconTextRow,
+                { transform: [{ scale: buttonScale }] },
+              ]}
+            >
               <Ionicons
                 name="log-out-outline"
                 size={22}
@@ -832,11 +969,10 @@ const CheckInScreen = () => {
               <CustomText bold style={{ color: "#d92d20", fontSize: 16 }}>
                 ออกงาน
               </CustomText>
-            </View>
+            </Animated.View>
           </TouchableOpacity>
         </View>
       </View>
-
       <Portal>
         <Modal
           visible={visible}
@@ -845,51 +981,62 @@ const CheckInScreen = () => {
             backgroundColor: "white",
             padding: 20,
             margin: 20,
-            borderRadius: 10,
+            borderRadius: 16,
+            shadowColor: "#000",
+            shadowOffset: { width: 0, height: 10 },
+            shadowOpacity: 0.25,
+            shadowRadius: 10,
+            elevation: 10,
           }}
         >
-          <View
+          <Animated.View
             style={{
               alignItems: "center",
               justifyContent: "center",
               paddingHorizontal: 20,
+              transform: [{ scale: buttonScale }],
             }}
           >
             <Ionicons
               name="checkmark-circle-outline"
-              size={60}
-              style={{ color: theme.colors.primary, marginBottom: 10 }}
+              size={80}
+              style={{ color: theme.colors.primary, marginBottom: 15 }}
             />
             <CustomText
               bold
               style={{
                 color: theme.colors.primary,
-                fontSize: 20,
-                marginBottom: 10,
+                fontSize: 22,
+                marginBottom: 12,
+                textAlign: "center",
               }}
             >
               {modalText || "บันทึกสำเร็จ"}
             </CustomText>
-
             <TouchableOpacity
               onPress={() => {
                 hideModal();
               }}
               style={{
-                padding: 10,
-                paddingHorizontal: 20,
+                padding: 12,
+                paddingHorizontal: 25,
                 backgroundColor: theme.colors.primary,
-                borderRadius: 5,
+                borderRadius: 8,
                 marginTop: 20,
                 width: "100%",
                 alignItems: "center",
+                shadowColor: "#000",
+                shadowOffset: { width: 0, height: 2 },
+                shadowOpacity: 0.2,
+                shadowRadius: 2,
+                elevation: 3,
               }}
             >
-              <CustomText bold style={{ color: "white" }}>
+              <CustomText bold style={{ color: "white", fontSize: 16 }}>
                 ตกลง
               </CustomText>
             </TouchableOpacity>
-          </View>
+          </Animated.View>
         </Modal>
       </Portal>
     </CustomBackground>
@@ -897,6 +1044,25 @@ const CheckInScreen = () => {
 };
 
 const styles = StyleSheet.create({
+  cameraOverlay: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    justifyContent: "center",
+    alignItems: "center",
+    zIndex: 2,
+    backgroundColor: "transparent",
+  },
+  cameraGuide: {
+    width: 250,
+    height: 300,
+    borderWidth: 2,
+    borderColor: "rgba(255,255,255,0.5)",
+    borderRadius: 125,
+    borderStyle: "dashed",
+  },
   buttonRow: {
     flexDirection: "row",
     justifyContent: "center",
@@ -991,7 +1157,7 @@ const styles = StyleSheet.create({
     width: 150,
   },
   map: {
-    height: 250,
+    height: 200,
     borderWidth: 1,
     backgroundColor: "#FFF",
     borderRadius: 10,
