@@ -190,12 +190,25 @@ const TalIndex = () => {
           <View style={styles.dashboardContainer}>
             {/* ส่วนแสดงจำนวนวันทำการและวันทำงาน */}
             <Card style={styles.summaryCard}>
-              <Card.Content>
+              <View
+                style={{
+                  padding: 15,
+                  flexDirection: "row",
+                  alignItems: "center",
+                  gap: 10,
+                }}
+              >
+                <Ionicons
+                  name="stats-chart"
+                  size={24}
+                  color={theme.colors.primary}
+                />
                 <CustomText bold style={styles.cardTitle}>
                   สรุปการทำงาน
                 </CustomText>
-                <Divider style={styles.divider} />
-
+              </View>
+              <Divider style={styles.divider} />
+              <Card.Content>
                 {/* จำนวนวันทำการ */}
                 <View style={styles.statRow}>
                   <View style={styles.statLabelContainer}>
@@ -240,18 +253,25 @@ const TalIndex = () => {
 
             {/* ส่วนแสดงสรุปการปฏิบัติงาน */}
             <Card style={styles.workSummaryCard}>
-              <Card.Title
-                title="สรุปการปฏิบัติงาน"
-                titleStyle={styles.workSummaryTitle}
-                left={(props) => (
-                  <Ionicons
-                    {...props}
-                    name="stats-chart"
-                    size={24}
-                    color={theme.colors.primary}
-                  />
-                )}
-              />
+              <View
+                style={{
+                  padding: 15,
+                  flexDirection: "row",
+                  alignItems: "center",
+                  gap: 10,
+                }}
+              >
+                <Ionicons
+                  name="stats-chart"
+                  size={24}
+                  color={theme.colors.primary}
+                />
+                <CustomText bold style={styles.cardTitle}>
+                  สรุปการปฏิบัติงาน
+                </CustomText>
+              </View>
+              <Divider style={styles.divider} />
+
               <Card.Content style={styles.workSummaryContent}>
                 {workList.length > 0 ? (
                   workList.map((row, index) => (
@@ -340,7 +360,6 @@ const styles = StyleSheet.create({
   cardTitle: {
     fontSize: 18,
     color: theme.colors.primary,
-    marginBottom: 10,
   },
   divider: {
     marginBottom: 15,
@@ -426,7 +445,7 @@ const styles = StyleSheet.create({
     fontStyle: "italic",
   },
   textLastUpdate: {
-    color: "#999",
+    color: "white",
     fontSize: 12,
     textAlign: "right",
     marginTop: 5,

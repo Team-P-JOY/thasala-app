@@ -354,11 +354,11 @@ const Schedule = () => {
             />
             <View style={styles.legendContainer}>
               <CustomText
+                bold
                 style={{
                   fontSize: 16,
                   marginBottom: 10,
                   color: theme.colors.primary,
-                  fontWeight: "bold",
                 }}
               >
                 คำอธิบายสัญลักษณ์
@@ -518,8 +518,6 @@ const styles = StyleSheet.create({
     height: 24,
     borderRadius: 4,
     margin: 4,
-    borderWidth: 1,
-    borderColor: "#ddd",
   },
   legendText: {
     marginRight: 15,

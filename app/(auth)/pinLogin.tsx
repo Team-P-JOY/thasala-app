@@ -407,7 +407,7 @@ const pinLogin = () => {
                   >
                     <Ionicons name="finger-print" size={32} color="white" />
                   </Animated.View>
-                  <CustomText style={styles.fingerprintButtonText}>
+                  <CustomText bold style={styles.fingerprintButtonText}>
                     สแกนลายนิ้วมือ
                   </CustomText>
                 </TouchableOpacity>
@@ -622,7 +622,6 @@ const styles = StyleSheet.create({
   fingerprintButtonText: {
     color: theme.colors.primary,
     fontSize: 14,
-    fontWeight: "bold",
     textAlign: "center",
     marginTop: 5,
   },

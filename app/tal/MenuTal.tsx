@@ -153,7 +153,6 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
   activeMenuText: {
-    fontWeight: "700",
     color: theme.colors.second,
   },
   menuDesc: {
