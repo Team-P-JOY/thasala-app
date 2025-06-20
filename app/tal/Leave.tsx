@@ -57,7 +57,7 @@ const Leave = () => {
       />
 
       {/* Menu session */}
-      <MenuTal />
+      <MenuTal active="Leave" />
 
       <ScrollView
         horizontal
@@ -97,7 +97,6 @@ const Leave = () => {
                       style={{ marginRight: 2, marginTop: 10 }}
                     />
                     <CustomText style={styles.textUseday}>
-                      {" "}
                       ใช้ไป {m.useday} วัน | {m.qty} ครั้ง
                     </CustomText>
                   </View>

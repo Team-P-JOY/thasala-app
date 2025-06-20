@@ -8,7 +8,14 @@ import { getDatetext } from "@/core/utils";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
-import { ActivityIndicator, RefreshControl, ScrollView, StyleSheet, TouchableOpacity, View } from "react-native";
+import {
+  ActivityIndicator,
+  RefreshControl,
+  ScrollView,
+  StyleSheet,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import { Chip, Surface } from "react-native-paper";
 import { useSelector } from "react-redux";
 import MenuTal from "./MenuTal";
@@ -21,7 +28,7 @@ const Timestamp = () => {
   let curYear = curDate.getFullYear() + 543;
   let monthly = curMonth < 10 ? "0" + curMonth : curMonth;
   monthly = monthly + "-" + curYear;
-  
+
   const [optionMonth, setOptionMonth] = useState<any[]>([]);
   const [month, setMonth] = useState(monthly);
   const [timestamp, setTimestamp] = useState<any[]>([]);
@@ -32,7 +39,7 @@ const Timestamp = () => {
 
   // ฟังก์ชันสำหรับไปเดือนก่อนหน้า
   const goToPreviousMonth = () => {
-    const currentIndex = optionMonth.findIndex(m => m.value === month);
+    const currentIndex = optionMonth.findIndex((m) => m.value === month);
     if (currentIndex > 0) {
       const prevMonth = optionMonth[currentIndex + 1].value;
       handleSelect(prevMonth);
@@ -41,7 +48,7 @@ const Timestamp = () => {
 
   // ฟังก์ชันสำหรับไปเดือนถัดไป
   const goToNextMonth = () => {
-    const currentIndex = optionMonth.findIndex(m => m.value === month);
+    const currentIndex = optionMonth.findIndex((m) => m.value === month);
     if (currentIndex < optionMonth.length + 1) {
       const nextMonth = optionMonth[currentIndex - 1].value;
       handleSelect(nextMonth);
@@ -79,7 +86,7 @@ const Timestamp = () => {
           setOptionMonth(arr);
         }
       })
-      .catch(error => {
+      .catch((error) => {
         console.error("Error fetching month data:", error);
       });
   };
@@ -101,8 +108,8 @@ const Timestamp = () => {
       if (data.code === 200) {
         // เรียงลำดับข้อมูลโดยเอาวันล่าสุดขึ้นก่อน
         const sortedData = [...data.dtTimestamp].sort((a, b) => {
-          const dateA = new Date(a.dateCheckin.split('/').reverse().join('-'));
-          const dateB = new Date(b.dateCheckin.split('/').reverse().join('-'));
+          const dateA = new Date(a.dateCheckin.split("/").reverse().join("-"));
+          const dateB = new Date(b.dateCheckin.split("/").reverse().join("-"));
           return dateB.getTime() - dateA.getTime();
         });
         setTimestamp(sortedData);
@@ -128,48 +135,68 @@ const Timestamp = () => {
   return (
     <CustomBackground>
       {/* Top bar session */}
-      <CustomTopBar title="Timestamp" back={() => router.push("/home")} />
-
+      <CustomTopBar
+        title="ประวัติการแสกนเข้า/ออกงาน"
+        back={() => router.push("/home")}
+      />
       {/* Menu session */}
-      <MenuTal />      {/* แสดงเดือนปัจจุบันพร้อมปุ่มเลือกเดือนก่อนหน้า/ถัดไป */}
+      <MenuTal active="Timestamp" />
+      {/* แสดงเดือนปัจจุบันพร้อมปุ่มเลือกเดือนก่อนหน้า/ถัดไป */}
       <View style={styles.monthNavigator}>
-        <TouchableOpacity 
-          style={styles.monthNavButton} 
+        <TouchableOpacity
+          style={styles.monthNavButton}
           onPress={goToPreviousMonth}
-          disabled={optionMonth.findIndex(m => m.value === month) <= 0}
+          disabled={optionMonth.findIndex((m) => m.value === month) <= 0}
         >
-          <Ionicons 
-            name="chevron-back" 
-            size={24} 
-            color={optionMonth.findIndex(m => m.value === month) <= 0 ? "#C5C5C5" : "#007AFF"} 
+          <Ionicons
+            name="chevron-back"
+            size={24}
+            color={
+              optionMonth.findIndex((m) => m.value === month) <= 0
+                ? "#C5C5C5"
+                : "#007AFF"
+            }
           />
         </TouchableOpacity>
-          <TouchableOpacity 
-          style={styles.currentMonthContainer} 
+        <TouchableOpacity
+          style={styles.currentMonthContainer}
           onPress={() => setMonthSelectorVisible(true)}
           activeOpacity={0.7}
         >
           <View style={styles.monthTextContainer}>
             <CustomText bold style={styles.currentMonthText}>
-              {optionMonth.find((m) => m.value === month)?.label || "กรุณาเลือกเดือน"}
+              {optionMonth.find((m) => m.value === month)?.label ||
+                "กรุณาเลือกเดือน"}
             </CustomText>
-            <Ionicons name="caret-down" size={16} color={theme.colors.primary} style={{marginLeft: 5}} />
+            <Ionicons
+              name="caret-down"
+              size={16}
+              color={theme.colors.primary}
+              style={{ marginLeft: 5 }}
+            />
           </View>
         </TouchableOpacity>
-        
-        <TouchableOpacity 
-          style={styles.monthNavButton} 
+
+        <TouchableOpacity
+          style={styles.monthNavButton}
           onPress={goToNextMonth}
-          disabled={optionMonth.findIndex(m => m.value === month) >= optionMonth.length - 1}
+          disabled={
+            optionMonth.findIndex((m) => m.value === month) >=
+            optionMonth.length - 1
+          }
         >
-          <Ionicons 
-            name="chevron-forward" 
-            size={24} 
-            color={optionMonth.findIndex(m => m.value === month) >= optionMonth.length - 1 ? "#C5C5C5" : "#007AFF"} 
+          <Ionicons
+            name="chevron-forward"
+            size={24}
+            color={
+              optionMonth.findIndex((m) => m.value === month) >=
+              optionMonth.length - 1
+                ? "#C5C5C5"
+                : "#007AFF"
+            }
           />
         </TouchableOpacity>
       </View>
-
       {/* Body session */}
       <ScrollView
         style={styles.container}
@@ -185,70 +212,87 @@ const Timestamp = () => {
         {loading ? (
           <View style={styles.loadingContainer}>
             <ActivityIndicator size="large" color={theme.colors.primary} />
-            <CustomText style={styles.loadingText}>กำลังโหลดข้อมูล...</CustomText>
-          </View>        ) : timestamp.length === 0 ? (
+            <CustomText style={styles.loadingText}>
+              กำลังโหลดข้อมูล...
+            </CustomText>
+          </View>
+        ) : timestamp.length === 0 ? (
           <View style={styles.noDataContainer}>
             <Ionicons name="calendar-outline" size={50} color="#999" />
-            <CustomText style={styles.noDataText}>ไม่พบข้อมูลการลงเวลา</CustomText>
+            <CustomText style={styles.noDataText}>
+              ไม่พบข้อมูลการลงเวลา
+            </CustomText>
           </View>
         ) : (
           <>
-              {timestamp.map((row, index) => (
-                <Surface key={index} style={styles.timestampItem}>
-                  <View style={styles.timestampHeader}>
-                    <View style={styles.dateContainer}>
-                      <Ionicons name="calendar" size={18} color={theme.colors.primary} />
-                      <CustomText bold style={styles.dateText}>
-                        {getDatetext(row.dateCheckin, "th", "l")}
-                      </CustomText>
-                    </View>
-                    <Chip 
-                      mode="flat"
+            {timestamp.map((row, index) => (
+              <Surface key={index} style={styles.timestampItem}>
+                <View style={styles.timestampHeader}>
+                  <View style={styles.dateContainer}>
+                    <Ionicons
+                      name="calendar"
+                      size={18}
+                      color={theme.colors.primary}
+                    />
+                    <CustomText bold style={styles.dateText}>
+                      {getDatetext(row.dateCheckin, "th", "l")}
+                    </CustomText>
+                  </View>
+                  <Chip
+                    mode="flat"
+                    style={[
+                      styles.timeChip,
+                      row.checktype === "0"
+                        ? styles.timeOutChip
+                        : styles.timeInChip,
+                    ]}
+                  >
+                    <CustomText style={styles.timeChipText}>
+                      {row.timeCheckin} น.
+                    </CustomText>
+                  </Chip>
+                </View>
+                <View style={styles.detailsRow}>
+                  <View style={styles.locationContainer}>
+                    <Ionicons
+                      name={row.unitNameFin ? "finger-print" : "location"}
+                      size={20}
+                      color="#666"
+                    />
+                    <CustomText
+                      style={styles.locationText}
+                      numberOfLines={1}
+                      ellipsizeMode="tail"
+                    >
+                      {row.unitNameFin
+                        ? row.unitNameFin
+                        : row.unitNameGps || "ไม่ระบุสถานที่"}
+                    </CustomText>
+                  </View>
+
+                  <View style={styles.checkTypeContainer}>
+                    <Ionicons
+                      name={row.checktype === "0" ? "log-out" : "log-in"}
+                      size={24}
+                      color={row.checktype === "0" ? "#db2828" : "#32cd32"}
+                    />
+                    <CustomText
                       style={[
-                        styles.timeChip, 
-                        row.checktype === "0" ? styles.timeOutChip : styles.timeInChip
+                        styles.checkTypeText,
+                        row.checktype === "0"
+                          ? styles.checkOutText
+                          : styles.checkInText,
                       ]}
                     >
-                      <CustomText style={styles.timeChipText}>
-                        {row.timeCheckin} น.
-                      </CustomText>
-                    </Chip>
-                  </View>                 
-                    <View style={styles.detailsRow}>
-                      
-                      
-                      <View style={styles.locationContainer}>
-                        <Ionicons
-                          name={row.unitNameFin ? "finger-print" : "location"}
-                          size={20}
-                          color="#666"
-                        />
-                        <CustomText style={styles.locationText} numberOfLines={1} ellipsizeMode="tail">
-                          {row.unitNameFin ? row.unitNameFin : row.unitNameGps || "ไม่ระบุสถานที่"}
-                        </CustomText>
-                      </View>
-
-                      
-                      <View style={styles.checkTypeContainer}>
-                        <Ionicons 
-                          name={row.checktype === "0" ? "log-out" : "log-in"} 
-                          size={24} 
-                          color={row.checktype === "0" ? "#db2828" : "#32cd32"} 
-                        />
-                        <CustomText style={[
-                          styles.checkTypeText,
-                          row.checktype === "0" ? styles.checkOutText : styles.checkInText
-                        ]}>
-                          {row.checktype === "0" ? "ออก" : "เข้า"}
-                        </CustomText>
-                      </View>
+                      {row.checktype === "0" ? "ออก" : "เข้า"}
+                    </CustomText>
                   </View>
-                    
-                </Surface>
-              ))}
+                </View>
+              </Surface>
+            ))}
           </>
-        )}      </ScrollView>
-      
+        )}
+      </ScrollView>
       {/* Month/Year Picker Component */}
       <MonthYearPicker
         visible={monthSelectorVisible}
@@ -265,7 +309,8 @@ const Timestamp = () => {
 
 export default Timestamp;
 
-const styles = StyleSheet.create({  container: {
+const styles = StyleSheet.create({
+  container: {
     flex: 1,
     paddingHorizontal: 15,
     paddingTop: 10,
@@ -276,8 +321,8 @@ const styles = StyleSheet.create({  container: {
   },
   loadingContainer: {
     padding: 30,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
   },
   loadingText: {
     marginTop: 10,
@@ -286,14 +331,14 @@ const styles = StyleSheet.create({  container: {
   },
   noDataContainer: {
     padding: 40,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
   },
   noDataText: {
     marginTop: 15,
     fontSize: 16,
-    color: '#999',
-    textAlign: 'center',
+    color: "#999",
+    textAlign: "center",
   },
   dropdownMonth: {
     marginTop: 10,
@@ -302,9 +347,9 @@ const styles = StyleSheet.create({  container: {
   },
   // Styles for month navigator
   monthNavigator: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     marginTop: 10,
     marginBottom: 10,
     paddingHorizontal: 16,
@@ -312,31 +357,31 @@ const styles = StyleSheet.create({  container: {
   monthNavButton: {
     padding: 8,
     borderRadius: 20,
-    backgroundColor: '#f5f5f5',
-    justifyContent: 'center',
-    alignItems: 'center',
+    backgroundColor: "#f5f5f5",
+    justifyContent: "center",
+    alignItems: "center",
     width: 40,
     height: 40,
   },
   currentMonthContainer: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     paddingHorizontal: 10,
   },
   monthTextContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
     paddingVertical: 5,
     paddingHorizontal: 10,
     borderRadius: 8,
-    backgroundColor: 'rgba(0, 122, 255, 0.1)',
+    backgroundColor: "rgba(0, 122, 255, 0.1)",
   },
   currentMonthText: {
     fontSize: 18,
     color: theme.colors.primary,
-    textAlign: 'center',
+    textAlign: "center",
   },
   // Styles for timestamp card
   timestampCard: {
@@ -350,77 +395,81 @@ const styles = StyleSheet.create({  container: {
   },
   cardContent: {
     padding: 0,
-  },  timestampItem: {
+  },
+  timestampItem: {
     padding: 12,
     borderRadius: 8,
     marginVertical: 4,
     elevation: 1,
-    backgroundColor: '#fff',
+    backgroundColor: "#fff",
   },
   timestampHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     marginBottom: 8,
   },
   dateContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
   },
   dateText: {
     fontSize: 15,
-    color: '#333',
+    color: "#333",
     marginLeft: 8,
   },
   timeChip: {
     height: 34,
   },
   timeInChip: {
-    backgroundColor: 'rgba(50, 205, 50, 0.2)',
+    backgroundColor: "rgba(50, 205, 50, 0.2)",
   },
   timeOutChip: {
-    backgroundColor: 'rgba(219, 40, 40, 0.2)',
+    backgroundColor: "rgba(219, 40, 40, 0.2)",
   },
   timeChipText: {
     fontSize: 13,
-    fontWeight: 'bold',
-  },  timestampDetails: {
+    fontWeight: "bold",
+  },
+  timestampDetails: {
     marginTop: 3,
   },
   detailsRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
   },
   checkTypeContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
   },
   checkTypeText: {
     fontSize: 16,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     marginLeft: 8,
   },
   checkInText: {
-    color: '#32cd32',
+    color: "#32cd32",
   },
   checkOutText: {
-    color: '#db2828',
-  },  locationContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    color: "#db2828",
+  },
+  locationContainer: {
+    flexDirection: "row",
+    alignItems: "center",
     flex: 1,
-    justifyContent: 'flex-start',
+    justifyContent: "flex-start",
     marginLeft: 8,
-    maxWidth: '60%',
+    maxWidth: "60%",
   },
   locationText: {
     fontSize: 14,
-    color: '#666',
+    color: "#666",
     marginLeft: 8,
-    textAlign: 'right',
+    textAlign: "right",
     flexShrink: 1,
-  },  itemDivider: {
+  },
+  itemDivider: {
     marginTop: 10,
     height: 1,
     opacity: 0.7,

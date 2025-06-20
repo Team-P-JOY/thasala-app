@@ -1,74 +1,93 @@
 import CustomText from "@/components/CustomText";
 import { theme } from "@/core/theme";
+import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import React from "react";
-import {
-  ScrollView,
-  StyleSheet,
-  TouchableOpacity,
-  View
-} from "react-native";
-import { Avatar } from "react-native-paper";
+import { ScrollView, StyleSheet, TouchableOpacity, View } from "react-native";
 
-const MenuTal = () => {
+type MenuTalProps = { active: string };
+
+const MenuTal = ({ active = "Home" }: MenuTalProps) => {
   const router = useRouter();
-
   const menu = [
     {
       name: "Dashboard",
-      desc: "สถิติบันทึกการปฏิบัติงาน",
+      desc: "สถิติการทำงาน",
       screen: "Home",
-      icon: "chart-arc",
+      icon: "stats-chart",
       route: "/tal",
     },
     {
       name: "ตารางทำงาน",
       desc: "สถานะการปฏิบัติงาน",
       screen: "Schedule",
-      icon: "calendar-month",
+      icon: "calendar",
       route: "/tal/Schedule",
     },
     {
-      name: "Timestamp",
+      name: "ประวัติแสกน",
       desc: "สแกนนิ้ว เข้า/ออก",
       screen: "Timestamp",
-      icon: "calendar-clock",
+      icon: "finger-print",
       route: "/tal/Timestamp",
     },
-    
+
     // {
     //   name: "บันทึกการลา",
     //   desc: "สถิติบันทึกการลา",
     //   screen: "Leave",
-    //   icon: "account-arrow-right",
+    //   icon: "log-out-outline",
     //   route: "/tal/Leave",
     // },
   ];
-
   return (
     <View>
       <ScrollView
-        horizontal={true} 
+        horizontal={true}
         showsHorizontalScrollIndicator={false}
         style={styles.scrollView}
       >
         <View style={styles.menuContainer}>
-          {menu.map((m, index) => (
-            <TouchableOpacity
-              key={index}
-              onPress={() =>{console.log(m.route);router.push(m.route as any);} }
-            >
-              <View style={styles.menuChild}>
-                <Avatar.Icon size={80} icon={m.icon} style={styles.avatarIcon} />
-                <CustomText
-                  bold
-                  style={{ fontSize: 14, color: theme.colors.primary }}
+          {menu.map((m, index) => {
+            const isActive = m.screen === active;
+            return (
+              <TouchableOpacity
+                key={index}
+                style={styles.menuItem}
+                onPress={() => {
+                  router.push(m.route as any);
+                }}
+              >
+                <View
+                  style={[styles.menuChild, isActive && styles.activeMenuChild]}
                 >
-                  {m.name}
-                </CustomText>
-              </View>
-            </TouchableOpacity>
-          ))}
+                  <View
+                    style={[
+                      styles.iconContainer,
+                      isActive && styles.activeIconContainer,
+                    ]}
+                  >
+                    <Ionicons
+                      name={m.icon as any}
+                      size={32}
+                      color={isActive ? theme.colors.primary : "white"}
+                    />
+                  </View>
+                  <CustomText
+                    bold
+                    style={[styles.menuText, isActive && styles.activeMenuText]}
+                  >
+                    {m.name}
+                  </CustomText>
+                  <CustomText
+                    style={[styles.menuDesc, isActive && styles.activeMenuDesc]}
+                  >
+                    {m.desc}
+                  </CustomText>
+                </View>
+              </TouchableOpacity>
+            );
+          })}
         </View>
       </ScrollView>
     </View>
@@ -77,32 +96,73 @@ const MenuTal = () => {
 
 const styles = StyleSheet.create({
   scrollView: {
-    padding: 10, 
-    height: "auto", 
-    // backgroundColor: "#000",
-    // flexGrow: 1
+    padding: 10,
+    height: "auto",
   },
   menuContainer: {
     flexDirection: "row",
-    flexWrap: "wrap",
-    justifyContent: "space-between",
-    //paddingHorizontal: 10,
-    //backgroundColor: "#ff0000",
+    justifyContent: "flex-start",
+    alignItems: "stretch",
+    paddingVertical: 10,
   },
-  menuChild:{
-    alignItems: "center", 
-    width: 100, 
-    //height: 100, 
-    // borderRightColor: "#0000ff",
-    // borderRightWidth:2,
+  menuItem: {
+    marginRight: 15,
   },
-  avatarIcon: {
-    backgroundColor: "#C3A7F4",
+  menuChild: {
+    alignItems: "center",
+    width: 140,
+    backgroundColor: "white",
+    borderRadius: 15,
+    padding: 15,
+    shadowColor: "#000",
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
+    elevation: 3,
+  },
+  activeMenuChild: {
+    backgroundColor: "#F6F0FF",
+    borderColor: theme.colors.primary,
     borderWidth: 1,
-    borderColor: "#ccc",
+    shadowColor: theme.colors.primary,
   },
-  textName:{
-    marginTop: 5
+  iconContainer: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    backgroundColor: theme.colors.primary,
+    justifyContent: "center",
+    alignItems: "center",
+    marginBottom: 10,
+    shadowColor: theme.colors.primary,
+    shadowOffset: {
+      width: 0,
+      height: 3,
+    },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    elevation: 5,
+  },
+  activeIconContainer: {
+    backgroundColor: "white",
+    borderColor: theme.colors.primary,
+    borderWidth: 2,
+  },
+  menuText: {
+    fontSize: 16,
+    color: theme.colors.primary,
+    textAlign: "center",
+  },
+  activeMenuText: {
+    fontWeight: "700",
+    color: theme.colors.second,
+  },
+  menuDesc: {
+    fontSize: 12,
+    color: "gray",
+    textAlign: "center",
+  },
+  activeMenuDesc: {
+    color: "#666",
   },
 });
 

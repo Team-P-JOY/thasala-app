@@ -11,7 +11,7 @@ import {
   RefreshControl,
   ScrollView,
   StyleSheet,
-  View
+  View,
 } from "react-native";
 import { Card, Divider, Surface } from "react-native-paper";
 import { useSelector } from "react-redux";
@@ -164,7 +164,7 @@ const TalIndex = () => {
       <CustomTopBar title="เวลาทำงาน" back={() => router.push("/home")} />
 
       {/* Menu session */}
-      <MenuTal />
+      <MenuTal active="Home" />
 
       {/* Body session */}
       <ScrollView
@@ -177,7 +177,9 @@ const TalIndex = () => {
         {loading ? (
           <View style={styles.loadingContainer}>
             <ActivityIndicator size="large" color={theme.colors.primary} />
-            <CustomText style={styles.loadingText}>กำลังโหลดข้อมูล...</CustomText>
+            <CustomText style={styles.loadingText}>
+              กำลังโหลดข้อมูล...
+            </CustomText>
           </View>
         ) : error ? (
           <View style={styles.errorContainer}>

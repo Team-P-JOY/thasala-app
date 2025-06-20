@@ -10,18 +10,12 @@ const LeaveSubstitute = () => {
   return (
     <CustomBackground>
       {/* Top bar session */}
-      <CustomTopBar 
-        title="รับมอบงาน" 
-        back={() => router.back()}
-      />
-
-      
-    
+      <CustomTopBar title="รับมอบงาน" back={() => router.back()} />
     </CustomBackground>
-  )
-}
+  );
+};
 
-export default LeaveSubstitute
+export default LeaveSubstitute;
 
 const styles = StyleSheet.create({
   container: {
@@ -56,8 +50,8 @@ const styles = StyleSheet.create({
     color: "gray",
   },
   scrollView: {
-    padding: 10, 
-    height: "auto", 
+    padding: 10,
+    height: "auto",
     // backgroundColor: "#000",
     // flexGrow: 1
   },
@@ -68,10 +62,10 @@ const styles = StyleSheet.create({
     //paddingHorizontal: 10,
     //backgroundColor: "#ff0000",
   },
-  menuChild:{
-    alignItems: "center", 
-    width: 100, 
-    //height: 100, 
+  menuChild: {
+    alignItems: "center",
+    width: 100,
+    //height: 100,
     // borderRightColor: "#0000ff",
     // borderRightWidth:2,
   },
@@ -92,24 +86,24 @@ const styles = StyleSheet.create({
     color: "lightgray",
     fontSize: 12,
     textAlign: "right",
-    marginTop:10
+    marginTop: 10,
   },
   containnerTitle: {
     flexDirection: "row",
     marginTop: 10,
     backgroundColor: "#FF8C00",
-    padding: 10
+    padding: 10,
   },
   textName: {
     fontSize: 18,
-    color: "#696969"
+    color: "#696969",
   },
-  textWorkTotal:{
+  textWorkTotal: {
     color: "#FF8C00",
     fontWeight: "bold",
   },
   textWork1: {
     color: "#000",
     fontWeight: "bold",
-  }
+  },
 });

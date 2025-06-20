@@ -392,7 +392,6 @@ const pinLogin = () => {
             </View>
             {isBiometricAvailable && (
               <View style={{ alignItems: "center", marginTop: 20 }}>
-                {" "}
                 <TouchableOpacity
                   onPress={handleBiometricAuth}
                   activeOpacity={0.7}
