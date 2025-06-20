@@ -12,7 +12,6 @@ const Activity = () => {
   const [data, setData] = useState<Array<any>>([]);
   const [loading, setLoading] = useState(true);
   const { user } = useSelector((state: RootState) => state.auth);
-
   useEffect(() => {
     if (!user) return;
     _callApi();
@@ -26,11 +25,16 @@ const Activity = () => {
           user.person_id +
           "&worktypeId=4"
       );
-      console.log(res.data);
-      setData(res.data.dt);
+      if (res.data && res.data.dt && Array.isArray(res.data.dt)) {
+        setData(res.data.dt);
+      } else {
+        setData([]);
+      }
       setLoading(false);
     } catch (error) {
       console.error(error);
+      setData([]);
+      setLoading(false);
     }
   };
   return (
@@ -54,7 +58,6 @@ const Activity = () => {
           กิจกรรมฝึกอบรม
         </CustomText>
       </View>
-
       {loading && (
         <View style={{ height: 150, width: "100%", padding: 10 }}>
           <View
@@ -73,8 +76,29 @@ const Activity = () => {
             />
           </View>
         </View>
-      )}
+      )}{" "}
       {!loading &&
+        (data.length === 0 ||
+          !data.some(
+            (dt) => dt.listByCourseGrp && dt.listByCourseGrp.length > 0
+          )) && (
+          <View style={styles.noDataContainer}>
+            <Ionicons
+              name="calendar-outline"
+              size={40}
+              color={theme.colors.primary}
+              style={styles.noDataIcon}
+            />
+            <CustomText bold style={styles.noDataTitle}>
+              ไม่มีกิจกรรมในขณะนี้
+            </CustomText>
+          </View>
+        )}
+      {!loading &&
+        data.length > 0 &&
+        data.some(
+          (dt) => dt.listByCourseGrp && dt.listByCourseGrp.length > 0
+        ) &&
         data.map(
           (dt, main) =>
             dt.listByCourseGrp.length > 0 && (
@@ -158,4 +182,42 @@ const Activity = () => {
 
 export default Activity;
 
-const styles = StyleSheet.create({});
+const styles = StyleSheet.create({
+  noDataContainer: {
+    padding: 10,
+    height: 150,
+    backgroundColor: "#ffffff80",
+    borderRadius: 12,
+    marginHorizontal: 10,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  noDataCard: {
+    height: "100%",
+    borderRadius: 12,
+    elevation: 2,
+    backgroundColor: "white",
+    borderColor: theme.colors.outline,
+    borderWidth: 0.5,
+  },
+  noDataContent: {
+    alignItems: "center",
+    justifyContent: "center",
+    height: "100%",
+  },
+  noDataIcon: {
+    marginBottom: 8,
+    opacity: 0.6,
+  },
+  noDataTitle: {
+    fontSize: 18,
+    color: theme.colors.primary,
+    marginBottom: 4,
+    opacity: 0.6,
+  },
+  noDataSubtitle: {
+    fontSize: 14,
+    color: theme.colors.second,
+    textAlign: "center",
+  },
+});

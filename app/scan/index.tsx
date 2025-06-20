@@ -4,7 +4,7 @@ import CustomTopBar from "@/components/CustomTopBar";
 import { theme } from "@/core/theme";
 import { Ionicons } from "@expo/vector-icons";
 import { CameraType, CameraView, useCameraPermissions } from "expo-camera";
-import { useRouter } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import { useState } from "react";
 import {
   Alert,
@@ -28,7 +28,10 @@ export default function QrScreen() {
   const [visible, setVisible] = useState(false);
   const showModal = () => setVisible(true);
   const hideModal = () => setVisible(false);
-  const [tabId, setTabId] = useState("1");
+
+  // รับค่า tabId จาก URL params
+  const params = useLocalSearchParams();
+  const [tabId, setTabId] = useState(params.tabId ? String(params.tabId) : "1");
 
   const [scanData, setScanData] = useState(null);
 
@@ -142,7 +145,10 @@ export default function QrScreen() {
                 justifyContent: "center",
                 gap: 5,
               }}
-              onPress={() => setTabId(tab.id)}
+              onPress={() => {
+                setTabId(tab.id);
+                router.setParams({ tabId: tab.id });
+              }}
             >
               <Ionicons
                 name={tab.icon}
@@ -171,7 +177,10 @@ export default function QrScreen() {
                 justifyContent: "center",
                 gap: 5,
               }}
-              onPress={() => setTabId(tab.id)}
+              onPress={() => {
+                setTabId(tab.id);
+                router.setParams({ tabId: tab.id });
+              }}
             >
               <Ionicons
                 name={tab.icon}
