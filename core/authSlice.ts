@@ -77,6 +77,13 @@ const INITIAL_MENU = [
     route: "/setting",
     show: true,
   },
+  {
+    key: 11,
+    label: "แจ้งซ่อม",
+    icon: "construct-outline",
+    route: "/scan?tabId=2",
+    show: false,
+  },
 ];
 
 // กำหนด State เริ่มต้น
