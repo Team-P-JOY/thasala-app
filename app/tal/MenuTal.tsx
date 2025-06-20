@@ -35,13 +35,14 @@ const MenuTal = () => {
       icon: "calendar-clock",
       route: "/tal/Timestamp",
     },
-    {
-      name: "บันทึกการลา",
-      desc: "สถิติบันทึกการลา",
-      screen: "Leave",
-      icon: "account-arrow-right",
-      route: "/tal/Leave",
-    },
+    
+    // {
+    //   name: "บันทึกการลา",
+    //   desc: "สถิติบันทึกการลา",
+    //   screen: "Leave",
+    //   icon: "account-arrow-right",
+    //   route: "/tal/Leave",
+    // },
   ];
 
   return (
