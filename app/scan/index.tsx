@@ -118,7 +118,6 @@ export default function QrScreen() {
         right={toggleCameraFacing}
         rightIcon="camera-flip-outline"
       />
-
       <View
         style={{
           flexDirection: "row",
@@ -126,8 +125,8 @@ export default function QrScreen() {
         }}
       >
         {[
-          { id: "1", name: "QR Code" },
-          { id: "2", name: "แจ้งซ่อม" },
+          { id: "1", name: "QR Code", icon: "qr-code-outline" as const },
+          { id: "2", name: "แจ้งซ่อม", icon: "construct-outline" as const },
         ].map((tab, index) =>
           tab.id === tabId ? (
             <TouchableOpacity
@@ -139,9 +138,17 @@ export default function QrScreen() {
                 borderColor: theme.colors.primary,
                 width: "50%",
                 alignItems: "center",
+                flexDirection: "row",
+                justifyContent: "center",
+                gap: 5,
               }}
               onPress={() => setTabId(tab.id)}
             >
+              <Ionicons
+                name={tab.icon}
+                size={24}
+                color={theme.colors.primary}
+              />
               <CustomText
                 bold
                 style={{
@@ -160,9 +167,17 @@ export default function QrScreen() {
                 paddingHorizontal: 15,
                 width: "50%",
                 alignItems: "center",
+                flexDirection: "row",
+                justifyContent: "center",
+                gap: 5,
               }}
               onPress={() => setTabId(tab.id)}
             >
+              <Ionicons
+                name={tab.icon}
+                size={24}
+                color={theme.colors.primary}
+              />
               <CustomText style={{ fontSize: 18, color: theme.colors.primary }}>
                 {tab.name}
               </CustomText>
@@ -170,41 +185,73 @@ export default function QrScreen() {
           )
         )}
       </View>
-
-      <View style={styles.container}>
-        <View style={styles.buttonContainer}>
-          <CustomText bold style={styles.message}>
-            กรุณาวาง QR Code หรือ Barcode ให้อยู่ในพื้นที่ที่กำหนด
+      {tabId === "1" && (
+        <>
+          <View style={styles.container}>
+            <View style={styles.buttonContainer}>
+              <CustomText bold style={styles.message}>
+                กรุณาวาง QR Code หรือ Barcode ให้อยู่ในพื้นที่ที่กำหนด
+              </CustomText>
+            </View>
+          </View>
+          <View
+            style={[
+              styles.camera,
+              {
+                width: width * 0.9,
+                height: width * 0.9,
+              },
+            ]}
+          >
+            <CameraView
+              style={styles.cameraFrame}
+              facing={facing}
+              onBarcodeScanned={scanned ? undefined : handleBarCodeScanned}
+              barcodeScannerSettings={{
+                barcodeTypes: ["qr"],
+              }}
+            >
+              <View style={styles.overlay}>
+                <Image
+                  resizeMode="contain"
+                  source={require("@/assets/images/camera.png")}
+                  style={{ width: width * 0.8, height: width * 0.8 }}
+                />
+              </View>
+            </CameraView>
+          </View>
+        </>
+      )}{" "}
+      {tabId === "2" && (
+        <View style={styles.comingSoonContainer}>
+          <Ionicons
+            name="time-outline"
+            size={80}
+            color={theme.colors.primary}
+          />
+          <CustomText
+            bold
+            style={{
+              fontSize: 24,
+              color: theme.colors.primary,
+              marginTop: 20,
+              textAlign: "center",
+            }}
+          >
+            เปิดให้บริการเร็วๆนี้
+          </CustomText>
+          <CustomText
+            style={{
+              fontSize: 16,
+              color: theme.colors.secondary,
+              marginTop: 10,
+              textAlign: "center",
+            }}
+          >
+            ระบบแจ้งซ่อมกำลังอยู่ในระหว่างการพัฒนา
           </CustomText>
         </View>
-      </View>
-      <View
-        style={[
-          styles.camera,
-          {
-            width: width * 0.9,
-            height: width * 0.9,
-          },
-        ]}
-      >
-        <CameraView
-          style={styles.cameraFrame}
-          facing={facing}
-          onBarcodeScanned={scanned ? undefined : handleBarCodeScanned}
-          barcodeScannerSettings={{
-            barcodeTypes: ["qr"],
-          }}
-        >
-          <View style={styles.overlay}>
-            <Image
-              resizeMode="contain"
-              source={require("@/assets/images/camera.png")}
-              style={{ width: width * 0.8, height: width * 0.8 }}
-            />
-          </View>
-        </CameraView>
-      </View>
-
+      )}
       <Portal>
         <Modal
           visible={visible}
@@ -352,5 +399,12 @@ const styles = StyleSheet.create({
   grantPermissionText: {
     color: "white",
     fontSize: 18,
+  },
+  comingSoonContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    paddingHorizontal: 20,
+    paddingVertical: 50,
   },
 });
