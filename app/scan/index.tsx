@@ -28,6 +28,7 @@ export default function QrScreen() {
   const [visible, setVisible] = useState(false);
   const showModal = () => setVisible(true);
   const hideModal = () => setVisible(false);
+  const [tabId, setTabId] = useState("1");
 
   const [scanData, setScanData] = useState(null);
 
@@ -117,6 +118,58 @@ export default function QrScreen() {
         right={toggleCameraFacing}
         rightIcon="camera-flip-outline"
       />
+
+      <View
+        style={{
+          flexDirection: "row",
+          justifyContent: "space-around",
+        }}
+      >
+        {[
+          { id: "1", name: "QR Code" },
+          { id: "2", name: "แจ้งซ่อม" },
+        ].map((tab, index) =>
+          tab.id === tabId ? (
+            <TouchableOpacity
+              key={index}
+              style={{
+                paddingVertical: 10,
+                paddingHorizontal: 15,
+                borderBottomWidth: 2,
+                borderColor: theme.colors.primary,
+                width: "50%",
+                alignItems: "center",
+              }}
+              onPress={() => setTabId(tab.id)}
+            >
+              <CustomText
+                bold
+                style={{
+                  fontSize: 18,
+                  color: theme.colors.primary,
+                }}
+              >
+                {tab.name}
+              </CustomText>
+            </TouchableOpacity>
+          ) : (
+            <TouchableOpacity
+              key={index}
+              style={{
+                paddingVertical: 10,
+                paddingHorizontal: 15,
+                width: "50%",
+                alignItems: "center",
+              }}
+              onPress={() => setTabId(tab.id)}
+            >
+              <CustomText style={{ fontSize: 18, color: theme.colors.primary }}>
+                {tab.name}
+              </CustomText>
+            </TouchableOpacity>
+          )
+        )}
+      </View>
 
       <View style={styles.container}>
         <View style={styles.buttonContainer}>
