@@ -8,7 +8,7 @@ import { Image, StyleSheet, View } from "react-native";
 import { useSelector } from "react-redux";
 
 function IntroScreen() {
-  const { isAuthenticated, isLoaded, pin } = useSelector(
+  const { isAuthenticated, isPinAuthenticated, isLoaded, pin } = useSelector(
     (state: RootState) => state.auth
   );
   const router = useRouter();
@@ -25,6 +25,8 @@ function IntroScreen() {
         } else {
           router.replace("/pinSetting");
         }
+      } else if (isPinAuthenticated) {
+        router.replace("/home");
       } else {
         router.replace("/login");
       }

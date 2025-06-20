@@ -4,9 +4,11 @@ import { logout, setPinAuthenticated } from "@/core/authSlice";
 import { RootState } from "@/core/store";
 import { theme } from "@/core/theme";
 import { Ionicons } from "@expo/vector-icons";
+import * as LocalAuthentication from "expo-local-authentication";
 import { useRouter } from "expo-router";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
+  Animated,
   Image,
   Modal,
   StyleSheet,
@@ -26,19 +28,81 @@ const pinLogin = () => {
   const [error, setError] = useState(false);
   const [modalLogout, setModalLogout] = useState(false);
   const router = useRouter();
-
+  const [isBiometricAvailable, setIsBiometricAvailable] = useState(false);
+  const [biometricError, setBiometricError] = useState("");
+  const pulseAnim = useRef(new Animated.Value(1)).current;
   const hour = new Date().getHours();
   const dayTime =
     hour >= 6 && hour < 12 ? "ตอนเช้า" : hour >= 18 ? "ตอนกลางคืน" : "ตอนบ่าย";
 
-  if (isPinAuthenticated) {
-    router.replace("/home");
-  }
+  useEffect(() => {
+    if (isPinAuthenticated) {
+      setIsBiometricAvailable(false);
+      router.replace("/home");
+    }
+  }, [isPinAuthenticated, router]);
+  // Animation for fingerprint button
+  useEffect(() => {
+    if (isBiometricAvailable) {
+      Animated.loop(
+        Animated.sequence([
+          Animated.timing(pulseAnim, {
+            toValue: 1.2,
+            duration: 800,
+            useNativeDriver: true,
+          }),
+          Animated.timing(pulseAnim, {
+            toValue: 1,
+            duration: 800,
+            useNativeDriver: true,
+          }),
+        ])
+      ).start();
+    }
+  }, [isBiometricAvailable, isPinAuthenticated]);
+  useEffect(() => {
+    (async () => {
+      try {
+        const compatible = await LocalAuthentication.hasHardwareAsync();
+
+        if (compatible) {
+          const authTypes =
+            await LocalAuthentication.supportedAuthenticationTypesAsync();
+          const hasFaceID = authTypes.includes(
+            LocalAuthentication.AuthenticationType.FACIAL_RECOGNITION
+          );
+          const hasFingerprint = authTypes.includes(
+            LocalAuthentication.AuthenticationType.FINGERPRINT
+          );
+
+          const enrolled = await LocalAuthentication.isEnrolledAsync();
+          if (!enrolled) {
+            setBiometricError(
+              hasFaceID
+                ? "ไม่พบการลงทะเบียน Face ID"
+                : hasFingerprint
+                ? "ไม่พบการลงทะเบียนลายนิ้วมือ"
+                : "ไม่พบการลงทะเบียน biometric"
+            );
+            setIsBiometricAvailable(false);
+          } else {
+            setIsBiometricAvailable(true);
+            // ไม่เรียกใช้งาน biometric อัตโนมัติ ผู้ใช้ต้องกดปุ่มเพื่อสแกนเอง
+          }
+        } else {
+          setIsBiometricAvailable(false);
+        }
+      } catch (error) {
+        console.log("ไม่สามารถเช็คความพร้อมของระบบ biometric ได้:", error);
+        setIsBiometricAvailable(false);
+      }
+    })();
+  }, []);
   useEffect(() => {
     if (pinNum.length === 6) {
       if (pinNum === pin) {
-        setPinAuthenticated();
-        router.replace("/home");
+        dispatch(setPinAuthenticated());
+        // Navigation will happen automatically through the isPinAuthenticated effect
       } else {
         setPinNum("");
         setError(true);
@@ -46,7 +110,7 @@ const pinLogin = () => {
         return;
       }
     }
-  }, [pinNum]);
+  }, [pinNum, pin, dispatch]);
   const handlePress = (num: string) => {
     Vibration.vibrate(80);
     if (pinNum.length < 6) {
@@ -64,10 +128,45 @@ const pinLogin = () => {
     Vibration.vibrate(80);
     setPinNum("");
   };
-
+  const handleBiometricAuth = async () => {
+    try {
+      setBiometricError("");
+      const result = await LocalAuthentication.authenticateAsync({
+        promptMessage: "กรุณาสแกนลายนิ้วมือ",
+        cancelLabel: "ยกเลิก",
+        disableDeviceFallback: true,
+        fallbackLabel: "ใช้ PIN แทน",
+      });
+      if (result.success) {
+        Vibration.vibrate(80);
+        dispatch(setPinAuthenticated());
+        // Navigation will happen automatically through the isPinAuthenticated effect
+      } else {
+        if (result.error === "user_cancel") {
+          // console.log("ผู้ใช้ยกเลิกการสแกน");
+        } else if (result.error === "authentication_failed") {
+          setBiometricError("การยืนยันตัวตนล้มเหลว กรุณาลองอีกครั้ง");
+          Vibration.vibrate(200);
+        } else if (result.error === "user_fallback") {
+          // User chose to use the fallback option (PIN)
+          setBiometricError("");
+          // Do nothing here since user will use PIN instead
+        } else {
+          console.log("การสแกนลายนิ้วมือล้มเหลว:", result);
+          setBiometricError("ไม่สามารถยืนยันลายนิ้วมือได้");
+          Vibration.vibrate(200);
+        }
+      }
+    } catch (error) {
+      console.log("เกิดข้อผิดพลาดในการสแกนลายนิ้วมือ:", error);
+      setBiometricError("เกิดข้อผิดพลาดในการสแกนลายนิ้วมือ");
+    }
+  };
   const handleLogout = () => {
     dispatch(logout());
-    router.replace("/");
+    setTimeout(() => {
+      router.replace("/");
+    }, 0);
   };
 
   return (
@@ -291,6 +390,35 @@ const pinLogin = () => {
                 />
               </TouchableOpacity>
             </View>
+            {isBiometricAvailable && (
+              <View style={{ alignItems: "center", marginTop: 20 }}>
+                {" "}
+                <TouchableOpacity
+                  onPress={handleBiometricAuth}
+                  activeOpacity={0.7}
+                  style={styles.fingerprintContainer}
+                >
+                  <Animated.View
+                    style={[
+                      styles.fingerprintButton,
+                      {
+                        transform: [{ scale: pulseAnim }],
+                      },
+                    ]}
+                  >
+                    <Ionicons name="finger-print" size={32} color="white" />
+                  </Animated.View>
+                  <CustomText style={styles.fingerprintButtonText}>
+                    สแกนลายนิ้วมือ
+                  </CustomText>
+                </TouchableOpacity>
+                {biometricError && (
+                  <CustomText style={styles.errorText}>
+                    {biometricError}
+                  </CustomText>
+                )}
+              </View>
+            )}
           </View>
         </View>
       </View>
@@ -470,7 +598,47 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
   },
-
+  fingerprintContainer: {
+    alignItems: "center",
+    justifyContent: "center",
+    marginVertical: 15,
+  },
+  fingerprintButton: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    backgroundColor: theme.colors.primary,
+    justifyContent: "center",
+    alignItems: "center",
+    marginBottom: 5,
+    shadowColor: theme.colors.primary,
+    shadowOffset: {
+      width: 0,
+      height: 3,
+    },
+    shadowOpacity: 0.5,
+    shadowRadius: 4.65,
+    elevation: 7,
+  },
+  fingerprintButtonText: {
+    color: theme.colors.primary,
+    fontSize: 14,
+    fontWeight: "bold",
+    textAlign: "center",
+    marginTop: 5,
+  },
+  errorText: {
+    color: "red",
+    fontSize: 14,
+    textAlign: "center",
+    marginTop: 5,
+  },
+  helperText: {
+    color: theme.colors.primary,
+    fontSize: 14,
+    textAlign: "center",
+    marginTop: 5,
+  },
   modalView: {
     backgroundColor: "white",
     borderRadius: 20,
