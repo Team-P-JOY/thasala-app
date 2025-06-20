@@ -13,6 +13,8 @@ import "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Provider as StoreProvider, useDispatch } from "react-redux";
 
+// Keep splash screen visible until we explicitly hide it
+// The splash screen configuration (including white background) is in app.json
 SplashScreen.preventAutoHideAsync();
 
 const AUTH_STORAGE_KEY = "thasala@auth";
@@ -95,11 +97,14 @@ export default function RootLayout() {
     Italic: require("../assets/fonts/LINESeedSansTH_A_Rg.ttf"),
     BoldItalic: require("../assets/fonts/LINESeedSansTH_A_Bd.ttf"),
   });
-
   useEffect(() => {
-    if (loaded) {
-      SplashScreen.hideAsync();
+    async function hideSplashScreen() {
+      if (loaded) {
+        // Hide the splash screen once fonts are loaded
+        await SplashScreen.hideAsync();
+      }
     }
+    hideSplashScreen();
   }, [loaded]);
 
   if (!loaded) {

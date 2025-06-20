@@ -13,7 +13,13 @@
     "preview": {
       "environment": "preview",
       "distribution": "internal",
-      "channel": "preview"
+      "channel": "preview",
+      "android": {
+        "buildType": "apk"
+      },
+      "env": {
+        "EXPO_DEBUG": "true"
+      }
     },
     "production": {
       "environment": "production",

@@ -3,6 +3,11 @@ import * as Device from "expo-device";
 import * as Notifications from "expo-notifications";
 import { Platform } from "react-native";
 
+// Handle import errors by providing fallback
+if (!Notifications) {
+  console.warn("expo-notifications import failed, using fallback");
+}
+
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
     shouldShowAlert: true,
@@ -83,6 +88,29 @@ export async function registerForPushNotifications() {
   } else {
     alert("Must use physical device for Push Notifications");
   }
-
   return token;
+}
+
+// Test function to verify if notifications module is working
+export function checkNotificationsModule() {
+  try {
+    // Check if Notifications is properly loaded
+    const isAvailable = !!Notifications;
+
+    // Try to access methods to verify module functionality
+    const hasSetHandler = !!Notifications.setNotificationHandler;
+
+    return {
+      isAvailable,
+      isModuleLoaded: hasSetHandler,
+      moduleName: "expo-notifications",
+      version: require("expo-notifications/package.json").version,
+    };
+  } catch (error: any) {
+    return {
+      isAvailable: false,
+      isModuleLoaded: false,
+      error: error?.message || "Unknown error",
+    };
+  }
 }

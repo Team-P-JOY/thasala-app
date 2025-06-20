@@ -13,7 +13,7 @@ import {
   StyleSheet,
   View,
 } from "react-native";
-import QRCode from "react-native-qrcode-svg";
+// import QRCode from "react-native-qrcode-svg";
 import { useSelector } from "react-redux";
 
 const index = () => {
@@ -73,14 +73,14 @@ const index = () => {
               borderRadius: 10,
             }}
           >
-            {user && (
+            {/* {user && (
               <QRCode
                 value={user?.person_id}
                 size={250}
                 backgroundColor={theme.colors.background}
                 color={theme.colors.primary}
               />
-            )}
+            )} */}
           </View>
           <CustomText style={[styles.token, { color: theme.colors.onPrimary }]}>
             {expoPushToken || "ไม่มี Token"}
