@@ -1,14 +1,15 @@
 import CustomBackground from "@/components/CustomBackground";
 import CustomText from "@/components/CustomText";
 import CustomTopBar from "@/components/CustomTopBar";
+import MonthYearPicker from "@/components/MonthYearPicker";
 import { RootState } from "@/core/store";
 import { theme } from "@/core/theme";
 import { getDatetext } from "@/core/utils";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
-import { ActivityIndicator, ScrollView, StyleSheet, View } from "react-native";
-import { Button, Divider, List, Menu } from "react-native-paper";
+import { ActivityIndicator, ScrollView, StyleSheet, TouchableOpacity, View } from "react-native";
+import { Divider, List } from "react-native-paper";
 import { useSelector } from "react-redux";
 import MenuTal from "./MenuTal";
 
@@ -21,18 +22,29 @@ const Timestamp = () => {
   let monthly = curMonth < 10 ? "0" + curMonth : curMonth;
   monthly = monthly + "-" + curYear;
   //console.log("this month " + monthly);
-
   const [optionMonth, setOptionMonth] = useState<any[]>([]);
   const [month, setMonth] = useState(monthly);
-  const [timestamp, setTimestamp] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [timestamp, setTimestamp] = useState<any[]>([]);  const [loading, setLoading] = useState(true);
+  // State สำหรับควบคุมการแสดง modal เลือกเดือน
+  const [monthSelectorVisible, setMonthSelectorVisible] = useState(false);
 
-  // ✅ State ควบคุมการเปิด/ปิด Menu
-  const [menuVisible, setMenuVisible] = useState(false);
+  // ฟังก์ชันสำหรับไปเดือนก่อนหน้า
+  const goToPreviousMonth = () => {
+    const currentIndex = optionMonth.findIndex(m => m.value === month);
+    if (currentIndex > 0) {
+      const prevMonth = optionMonth[currentIndex + 1].value;
+      handleSelect(prevMonth);
+    }
+  };
 
-  // ✅ ฟังก์ชันเปิด-ปิด Menu
-  const openMenu = () => setMenuVisible(true);
-  const closeMenu = () => setMenuVisible(false);
+  // ฟังก์ชันสำหรับไปเดือนถัดไป
+  const goToNextMonth = () => {
+    const currentIndex = optionMonth.findIndex(m => m.value === month);
+    if (currentIndex < optionMonth.length + 1) {
+      const nextMonth = optionMonth[currentIndex - 1].value;
+      handleSelect(nextMonth);
+    }
+  };
 
   const initSelectMonth = () => {
     fetch(
@@ -81,11 +93,9 @@ const Timestamp = () => {
         });
     }
   }, [loading]);
-
-  const handleSelect = (value) => {
+  const handleSelect = (value: string) => {
     setLoading(true);
     setMonth(value);
-    closeMenu();
   };
 
   return (
@@ -94,29 +104,43 @@ const Timestamp = () => {
       <CustomTopBar title="Timestamp" back={() => router.push("/home")} />
 
       {/* Menu session */}
-      <MenuTal />
-
-      {/* ✅ เปลี่ยน Dropdown เป็น Menu */}
-      <View style={styles.dropdownMonth}>
-        <Menu
-          visible={menuVisible}
-          onDismiss={closeMenu}
-          anchor={
-            <Button mode="outlined" onPress={openMenu}>
-              เลือกเดือน:{" "}
-              {optionMonth.find((m) => m.value === month)?.label ||
-                "กรุณาเลือกเดือน"}
-            </Button>
-          }
+      <MenuTal />      {/* แสดงเดือนปัจจุบันพร้อมปุ่มเลือกเดือนก่อนหน้า/ถัดไป */}
+      <View style={styles.monthNavigator}>
+        <TouchableOpacity 
+          style={styles.monthNavButton} 
+          onPress={goToPreviousMonth}
+          disabled={optionMonth.findIndex(m => m.value === month) <= 0}
         >
-          {optionMonth.map((item, index) => (
-            <Menu.Item
-              key={index}
-              onPress={() => handleSelect(item.value)}
-              title={item.label}
-            />
-          ))}
-        </Menu>
+          <Ionicons 
+            name="chevron-back" 
+            size={24} 
+            color={optionMonth.findIndex(m => m.value === month) <= 0 ? "#C5C5C5" : "#007AFF"} 
+          />
+        </TouchableOpacity>
+          <TouchableOpacity 
+          style={styles.currentMonthContainer} 
+          onPress={() => setMonthSelectorVisible(true)}
+          activeOpacity={0.7}
+        >
+          <View style={styles.monthTextContainer}>
+            <CustomText bold style={styles.currentMonthText}>
+              {optionMonth.find((m) => m.value === month)?.label || "กรุณาเลือกเดือน"}
+            </CustomText>
+            <Ionicons name="caret-down" size={16} color={theme.colors.primary} style={{marginLeft: 5}} />
+          </View>
+        </TouchableOpacity>
+        
+        <TouchableOpacity 
+          style={styles.monthNavButton} 
+          onPress={goToNextMonth}
+          disabled={optionMonth.findIndex(m => m.value === month) >= optionMonth.length - 1}
+        >
+          <Ionicons 
+            name="chevron-forward" 
+            size={24} 
+            color={optionMonth.findIndex(m => m.value === month) >= optionMonth.length - 1 ? "#C5C5C5" : "#007AFF"} 
+          />
+        </TouchableOpacity>
       </View>
 
       {/* Body session */}
@@ -171,11 +195,21 @@ const Timestamp = () => {
               </View>
             ))}
           </List.Section>
-        )}
-      </ScrollView>
+        )}      </ScrollView>
+      
+      {/* Month/Year Picker Component */}
+      <MonthYearPicker
+        visible={monthSelectorVisible}
+        onDismiss={() => setMonthSelectorVisible(false)}
+        options={optionMonth}
+        currentValue={month}
+        onSelect={handleSelect}
+      />
     </CustomBackground>
   );
 };
+
+// No longer needed as we're using inline Modal
 
 export default Timestamp;
 
@@ -188,6 +222,44 @@ const styles = StyleSheet.create({
     marginTop: 10,
     marginBottom: 10,
     alignItems: "center",
+  },
+  // New styles for month navigator
+  monthNavigator: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginTop: 10,
+    marginBottom: 10,
+    paddingHorizontal: 16,
+  },
+  monthNavButton: {
+    padding: 8,
+    borderRadius: 20,
+    backgroundColor: '#f5f5f5',
+    justifyContent: 'center',
+    alignItems: 'center',
+    width: 40,
+    height: 40,
+  },
+  currentMonthContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 10,
+  },
+  monthTextContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 5,
+    paddingHorizontal: 10,
+    borderRadius: 8,
+    backgroundColor: 'rgba(0, 122, 255, 0.1)',
+  },
+  currentMonthText: {
+    fontSize: 18,
+    color: theme.colors.primary,
+    textAlign: 'center',
   },
   listShift: {},
   title: {
@@ -273,8 +345,7 @@ const styles = StyleSheet.create({
   textWork1: {
     color: "#000",
     fontWeight: "bold",
-  },
-  labelShift: {
+  },  labelShift: {
     color: "steelblue",
     fontSize: 14,
     marginTop: 5,
